@@ -8,9 +8,9 @@ import java.util.Optional;
 public interface ProductRepository {
     List<Product> getProducts();
 
-    Optional<Product> getProduct(Long id);
+    Product getProduct(Long id);
 
-    Optional<Product> updateProduct(Long id, Product product);
+    Product updateProduct(Long id, Product product);
 
     Product createProduct(Product product);
 }

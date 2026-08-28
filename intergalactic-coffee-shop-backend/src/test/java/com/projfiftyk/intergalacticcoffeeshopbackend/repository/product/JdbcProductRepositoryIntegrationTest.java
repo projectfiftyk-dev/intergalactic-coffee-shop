@@ -2,6 +2,7 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.repository.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +33,19 @@ public class JdbcProductRepositoryIntegrationTest {
     @Test
     void shouldGetProduct() {
         // Act
-        Optional<Product> product = repository.getProduct(1L);
+        Product product = repository.getProduct(1L);
 
         // Assert
-        assertTrue(product.isPresent());
-        assertEquals("Espresso", product.get().getName());
+        assertEquals("Espresso", product.getName());
     }
 
     @Test
     void shouldReturnEmptyWhenProductDontExist(){
-        // Act
-        Optional<Product> product = repository.getProduct(24L);
-
-        // Assert
-        assertTrue(product.isEmpty());
+        // Act & Assert
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> repository.getProduct(24L)
+        );
     }
 
     @Test
@@ -56,13 +56,12 @@ public class JdbcProductRepositoryIntegrationTest {
         product.setProductStatus(ProductStatus.ACTIVE);
 
         // Act
-        Optional<Product> updatedProduct = repository.updateProduct(2L, product);
+        Product updatedProduct = repository.updateProduct(2L, product);
 
         // Assert
-        assertTrue(updatedProduct.isPresent());
-        assertEquals("Latte", updatedProduct.get().getName());
-        assertEquals(ProductStatus.ACTIVE, updatedProduct.get().getProductStatus());
-        assertEquals(2L, updatedProduct.get().getId());
+        assertEquals("Latte", updatedProduct.getName());
+        assertEquals(ProductStatus.ACTIVE, updatedProduct.getProductStatus());
+        assertEquals(2L, updatedProduct.getId());
     }
 
     @Test
@@ -72,11 +71,11 @@ public class JdbcProductRepositoryIntegrationTest {
         product.setName("Latte");
         product.setProductStatus(ProductStatus.ACTIVE);
 
-        // Act
-        Optional<Product> updatedProduct = repository.updateProduct(23L, product);
-
-        // Assert
-        assertTrue(updatedProduct.isEmpty());
+        // Act & Arrange
+        Exception ex = assertThrows(
+                ProductNotFoundException.class,
+                () -> repository.updateProduct(23L, product)
+        );
     }
 
     @Test

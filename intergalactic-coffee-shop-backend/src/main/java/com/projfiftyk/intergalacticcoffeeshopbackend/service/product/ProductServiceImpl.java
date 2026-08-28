@@ -37,53 +37,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse getProduct(Long id) {
-        Optional<Product> optional = productRepository.getProduct(id);
-        if (optional.isEmpty())
-            throw new ProductNotFoundException(id);
-
-        return mapper.map(optional.get());
+        Product product = productRepository.getProduct(id);
+        return mapper.map(product);
     }
 
     @Override
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request)
     {
-        Optional<Product> optionalExistingProduct = productRepository.getProduct(id);
-
-        if (optionalExistingProduct.isEmpty())
-        {
-            throw new ProductNotFoundException(id);
-        }
-
-        Product existing = optionalExistingProduct.get();
-        existing.setName(request.name());
-        Optional<Product> optionalUpdated = productRepository.updateProduct(id, existing);
-        if (optionalUpdated.isEmpty())
-        {
-            // TODO: handle this later
-            throw new RuntimeException("DB Error");
-        }
-
-        return mapper.map(optionalUpdated.get());
+        Product product = productRepository.getProduct(id);
+        product.setName(request.name());
+        Product updated = productRepository.updateProduct(id, product);
+        return mapper.map(updated);
     }
 
     @Override
     public ProductResponse updateStatus(Long id, ProductStatusUpdateRequest productStatus)
     {
-        Optional<Product> existingProduct = this.productRepository.getProduct(id);
-
-        if (existingProduct.isEmpty())
-        {
-            throw new ProductNotFoundException(id);
-        }
-
-        Product product = existingProduct.get();
-
+        Product product = productRepository.getProduct(id);
         product.setProductStatus(productStatus.productStatus());
-        Optional<Product> optionalUpdated = productRepository.updateProduct(id, product);
-        if (optionalUpdated.isEmpty())
-            throw new RuntimeException();
-
-        return mapper.map(optionalUpdated.get());
+        Product updated = productRepository.updateProduct(id, product);
+        return mapper.map(updated);
     }
 
     @Override

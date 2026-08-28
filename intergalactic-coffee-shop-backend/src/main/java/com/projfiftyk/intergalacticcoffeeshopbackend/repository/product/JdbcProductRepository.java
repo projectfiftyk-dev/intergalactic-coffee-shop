@@ -2,6 +2,7 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.repository.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -9,10 +10,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class JdbcProductRepository implements ProductRepository{
@@ -45,7 +44,7 @@ public class JdbcProductRepository implements ProductRepository{
     }
 
     @Override
-    public Optional<Product> getProduct(Long id) {
+    public Product getProduct(Long id) {
         String sql = """
                 SELECT id, name, product_status
                 FROM products
@@ -56,11 +55,11 @@ public class JdbcProductRepository implements ProductRepository{
                 sql, productRowMapper, id
         );
 
-        return products.stream().findFirst();
+        return products.stream().findFirst().orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Override
-    public Optional<Product> updateProduct(Long id, Product product)
+    public Product updateProduct(Long id, Product product)
     {
         String sql = """
                 UPDATE products
@@ -76,7 +75,7 @@ public class JdbcProductRepository implements ProductRepository{
 
         if (rowsUpdated == 0)
         {
-            return Optional.empty();
+            throw new ProductNotFoundException(id);
         }
 
         return  getProduct(id);
