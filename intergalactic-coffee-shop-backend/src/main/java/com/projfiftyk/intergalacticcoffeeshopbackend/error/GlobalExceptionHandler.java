@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     @ExceptionHandler(ProductNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void handleProductNotFound(ProductNotFoundException exception)
-    {
+    public void handleProductNotFound() {}
 
-    }
+    @ExceptionHandler(OrderNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public void handleOrderNotFound() {}
+
 }
