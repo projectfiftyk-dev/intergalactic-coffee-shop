@@ -2,17 +2,15 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.service.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
-import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {

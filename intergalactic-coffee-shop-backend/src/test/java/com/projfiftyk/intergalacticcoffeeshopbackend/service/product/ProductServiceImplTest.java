@@ -5,10 +5,10 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatu
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

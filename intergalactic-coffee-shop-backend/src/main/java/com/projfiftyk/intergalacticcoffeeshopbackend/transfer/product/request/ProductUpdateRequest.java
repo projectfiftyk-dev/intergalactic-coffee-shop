@@ -1,4 +1,4 @@
-package com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request;
+package com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

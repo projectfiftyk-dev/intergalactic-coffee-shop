@@ -2,10 +2,10 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.web.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.service.product.ProductService;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 

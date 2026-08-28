@@ -1,9 +1,8 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
 
 import java.util.List;
 
