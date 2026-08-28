@@ -2,18 +2,22 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.service.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ProductService  {
-    List<Product> listProducts();
+    List<ProductResponse> listProducts();
 
-    Optional<Product> getProduct(Long id);
+    ProductResponse getProduct(Long id);
 
-    Optional<Product> updateProduct(Long id, Product product);
+    ProductResponse updateStatus(Long id, ProductStatusUpdateRequest productStatus);
 
-    Optional<Product> updateStatus(Long id, ProductStatus productStatus);
+    ProductResponse updateProduct(Long id, ProductUpdateRequest product);
 
-    Product createProduct(Product product);
+    ProductResponse createProduct(ProductCreateRequest request);
 }

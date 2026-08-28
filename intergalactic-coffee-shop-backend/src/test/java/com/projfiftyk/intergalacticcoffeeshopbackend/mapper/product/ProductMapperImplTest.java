@@ -76,19 +76,4 @@ public class ProductMapperImplTest {
         assertNull(product.getId());
         assertEquals("Espresso", product.getName());
     }
-
-    @Test
-    void shouldMapToProductFromUpdateRequest() {
-        // Arrange
-        ProductUpdateRequest request = new ProductUpdateRequest("Espresso");
-
-        // Act
-        Product product = mapper.map(request);
-
-        // Assert
-        assertNull(product.getId());
-        assertEquals("Espresso", product.getName());
-    }
-
-
 }

@@ -2,24 +2,36 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.service.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
+import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.InMemoryProductRepository;
+import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.LongToIntFunction;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 public class ProductServiceImplTest {
     private InMemoryProductRepository repository;
+    private ProductMapper mapper;
     private ProductService service;
 
     @BeforeEach
     void setUp() {
         // Arrange
         repository = new InMemoryProductRepository();
+        mapper = mock(ProductMapper.class);
 
         Product product1 = new Product();
         product1.setId(1L);
@@ -34,106 +46,185 @@ public class ProductServiceImplTest {
         repository.addProduct(product1);
         repository.addProduct(product2);
 
-        service = new ProductServiceImpl(repository);
+        service = new ProductServiceImpl(repository, mapper);
     }
 
     @Test
     void shouldListProducts() {
+        // Arrange
+        List<ProductResponse> mappedProducts = List.of(
+                new ProductResponse(
+                        1L,
+                        "Espresso",
+                        ProductStatus.ACTIVE
+                ),
+                new ProductResponse(
+                        2L,
+                        "Cappuccino",
+                        ProductStatus.DEPRECATED
+                )
+        );
+
+        when(mapper.map(anyList())).thenReturn(mappedProducts);
+
         // Act
-        List<Product> products = service.listProducts();
+        List<ProductResponse> products = service.listProducts();
 
         // Assert
-        assertEquals(2, products.size());
+        assertEquals(mappedProducts, products);
     }
 
     @Test
     void shouldGetProduct() {
+        // Arrange
+        ProductResponse mappedProduct = new ProductResponse(
+                1L,
+                "Espresso",
+                ProductStatus.ACTIVE
+        );
+
+        when(mapper.map(any(Product.class))).thenReturn(mappedProduct);
+
         // Act
-        Optional<Product> product = service.getProduct(1L);
+        ProductResponse product = service.getProduct(1L);
 
         // Assert
-        assertTrue(product.isPresent());
-        assertEquals("Espresso", product.get().getName());
+        assertNotNull(product);
+        assertEquals("Espresso", product.name());
     }
 
     @Test
-    void shouldReturnEmptyWhenProductDoesNotExist() {
-        // Act
-        Optional<Product> product = service.getProduct(3L);
+    void shouldThrowWhenProductDoesNotExist() {
+        // Act & Assert
+        ProductNotFoundException exception = assertThrows(
+                ProductNotFoundException.class,
+                () -> service.getProduct(3L)
+        );
 
-        // Assert
-        assertFalse(product.isPresent());
+        assertEquals(
+                "Product with id 3 was not found",
+                exception.getMessage()
+        );
     }
 
     @Test
     void shouldUpdateProduct() {
         // Arrange
-        Product product = new Product();
-        Long id = 1L;
-        product.setId(id);
-        product.setName("Latte");
-        product.setProductStatus(ProductStatus.ACTIVE);
+        ProductUpdateRequest updateRequest = new ProductUpdateRequest(
+                "Espresso"
+        );
+        ProductResponse mappedProduct = new ProductResponse(
+                1L,
+                "Espresso",
+                ProductStatus.ACTIVE
+        );
+
+        when(mapper.map(any(Product.class))).thenReturn(mappedProduct);
 
         // Act
-        Optional<Product> updatedProduct = service.updateProduct(id, product);
+        ProductResponse updatedProduct = service.updateProduct(1L, updateRequest);
 
         // Assert
-        assertTrue(updatedProduct.isPresent());
-        assertEquals(1L, updatedProduct.get().getId());
-        assertEquals("Latte", updatedProduct.get().getName());
-        assertEquals(ProductStatus.ACTIVE, updatedProduct.get().getProductStatus());
-
+        assertNotNull(updatedProduct);
+        assertEquals("Espresso", updatedProduct.name());
     }
 
     @Test
-    void shouldReturnEmptyWhenProductDoesNotExistOnUpdate(){
+    void shouldThrowOnUpdateWhenProductDontExist(){
         // Arrange
-        Product product = new Product();
-        Long id = 23L;
-        product.setId(id);
-        product.setName("Latte");
-        product.setProductStatus(ProductStatus.ACTIVE);
+        ProductUpdateRequest updateRequest = new ProductUpdateRequest(
+                "Espresso"
+        );
 
-        // Act
-        Optional<Product> updatedProduct = service.updateProduct(id, product);
+        ProductNotFoundException exception = assertThrows(
+                ProductNotFoundException.class,
+                () -> service.updateProduct(5L, updateRequest)
+        );
 
-        // Assert
-        assertTrue(updatedProduct.isEmpty());
+        assertEquals(
+                "Product with id 5 was not found",
+                exception.getMessage()
+        );
     }
+
+//    @Test
+//    void shouldThrowOnUpdateWhenUpdateDBError() {
+//        // Arrange
+//        when(repository.updateProduct(any(), any())).thenReturn(Optional.empty());
+//        ProductUpdateRequest updateRequest = new ProductUpdateRequest(
+//                "Espresso"
+//        );
+//
+//        // Act & Assert
+//        assertThrows(
+//                RuntimeException.class,
+//                () -> service.updateProduct(1L, updateRequest)
+//        );
+//    }
 
     @Test
     void shouldUpdateProductStatus()
     {
+        // Arrange
+        ProductStatusUpdateRequest statusUpdateRequest = new ProductStatusUpdateRequest(ProductStatus.DEPRECATED);
+        ProductResponse mappedResponse = new ProductResponse(
+            1L,
+            "Espresso",
+            ProductStatus.DEPRECATED
+        );
+        when(mapper.map(any(Product.class))).thenReturn(mappedResponse);
+
         // Act
-        Optional<Product> updatedProduct = service.updateStatus(1L, ProductStatus.DEPRECATED);
+        ProductResponse updated = service.updateStatus(1L, statusUpdateRequest);
 
         // Assert
-        assertTrue(updatedProduct.isPresent());
-        assertEquals(1L, updatedProduct.get().getId());
-        assertEquals(ProductStatus.DEPRECATED, updatedProduct.get().getProductStatus());
+        assertNotNull(updated);
+        assertEquals("Espresso", updated.name());
     }
 
     @Test
-    void shouldReturnEmptyProductDoesNotExistOnStatusChange(){
-        // Act
-        Optional<Product> updatedProduct = service.updateStatus(10L, ProductStatus.ACTIVE);
+    void shouldThrowOnStatusUpdateWhenDontExist(){
+        // Arrange
+        ProductStatusUpdateRequest statusUpdateRequest = new ProductStatusUpdateRequest(ProductStatus.DEPRECATED);
 
-        // Assert
-        assertTrue(updatedProduct.isEmpty());
+        // Act & Assert
+        ProductNotFoundException exception = assertThrows(
+                ProductNotFoundException.class,
+                () -> service.updateStatus(5L, statusUpdateRequest)
+        );
+
+        assertEquals(
+                "Product with id 5 was not found",
+                exception.getMessage()
+        );
+
     }
 
     @Test
     void shouldCreateNewProduct() {
         // Arrange
-        Product newProduct = new Product();
-        newProduct.setName("Machiato");
-        newProduct.setProductStatus(ProductStatus.ACTIVE);
+        ProductCreateRequest request = new ProductCreateRequest("Machiato");
+
+        Product product = new Product();
+        product.setName("Machiato");
+
+        ProductResponse mappedResponse = new ProductResponse(
+                5L,
+                "Machiato",
+                ProductStatus.DRAFT
+        );
+
+        when(mapper.map(any(ProductCreateRequest.class)))
+                .thenReturn(product);
+
+        when(mapper.map(any(Product.class)))
+                .thenReturn(mappedResponse);
 
         // Act
-        Product addedProduct = service.createProduct(newProduct);
+        ProductResponse response = service.createProduct(request);
 
-        // Arrange
-        assertEquals(3L, addedProduct.getId());
-        assertEquals(ProductStatus.DRAFT, addedProduct.getProductStatus());
+        // Assert
+        assertEquals("Machiato", response.name());
+        assertEquals(ProductStatus.DRAFT, response.productStatus());
     }
 }

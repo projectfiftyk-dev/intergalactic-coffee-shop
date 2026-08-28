@@ -13,6 +13,4 @@ public interface ProductMapper {
     ProductResponse map(Product product);
 
     Product map(ProductCreateRequest productCreateRequest);
-
-    Product map(ProductUpdateRequest productUpdateRequest);
 }
