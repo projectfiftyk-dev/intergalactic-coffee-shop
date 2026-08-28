@@ -2,5 +2,6 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.domain.product;
 
 public enum ProductStatus {
     ACTIVE,
+    DRAFT,
     DEPRECATED
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.LongToIntFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,12 +69,13 @@ public class ProductServiceImplTest {
     void shouldUpdateProduct() {
         // Arrange
         Product product = new Product();
-        product.setId(1L);
+        Long id = 1L;
+        product.setId(id);
         product.setName("Latte");
         product.setProductStatus(ProductStatus.ACTIVE);
 
         // Act
-        Optional<Product> updatedProduct = service.updateProduct(product);
+        Optional<Product> updatedProduct = service.updateProduct(id, product);
 
         // Assert
         assertTrue(updatedProduct.isPresent());
@@ -87,12 +89,13 @@ public class ProductServiceImplTest {
     void shouldReturnEmptyWhenProductDoesNotExistOnUpdate(){
         // Arrange
         Product product = new Product();
-        product.setId(23L);
+        Long id = 23L;
+        product.setId(id);
         product.setName("Latte");
         product.setProductStatus(ProductStatus.ACTIVE);
 
         // Act
-        Optional<Product> updatedProduct = service.updateProduct(product);
+        Optional<Product> updatedProduct = service.updateProduct(id, product);
 
         // Assert
         assertTrue(updatedProduct.isEmpty());
@@ -131,6 +134,6 @@ public class ProductServiceImplTest {
 
         // Arrange
         assertEquals(3L, addedProduct.getId());
-        newProduct.setProductStatus(ProductStatus.ACTIVE);
+        assertEquals(ProductStatus.DRAFT, addedProduct.getProductStatus());
     }
 }

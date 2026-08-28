@@ -29,9 +29,9 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public Optional<Product> updateProduct(Product product) {
+    public Optional<Product> updateProduct(Long id, Product product) {
         for (int i = 0; i < inMemoryProducts.size(); i++) {
-            if (inMemoryProducts.get(i).getId().equals(product.getId())) {
+            if (inMemoryProducts.get(i).getId().equals(id)) {
                 inMemoryProducts.set(i, product);
                 return Optional.of(product);
             }

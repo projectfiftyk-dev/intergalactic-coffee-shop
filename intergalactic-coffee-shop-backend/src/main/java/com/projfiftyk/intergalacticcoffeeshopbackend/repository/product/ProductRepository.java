@@ -10,7 +10,7 @@ public interface ProductRepository {
 
     Optional<Product> getProduct(Long id);
 
-    Optional<Product> updateProduct(Product product);
+    Optional<Product> updateProduct(Long id, Product product);
 
     Product createProduct(Product product);
 }

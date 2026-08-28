@@ -28,16 +28,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<Product> updateProduct(Product product)
+    public Optional<Product> updateProduct(Long id, Product product)
     {
-        Optional<Product> existingProduct = productRepository.getProduct(product.getId());
+        Optional<Product> optionalExistingProduct = productRepository.getProduct(id);
 
-        if (existingProduct.isEmpty())
+        if (optionalExistingProduct.isEmpty())
         {
             return Optional.empty();
         }
 
-        return productRepository.updateProduct(product);
+        Product existing = optionalExistingProduct.get();
+        existing.setName(product.getName());
+
+        return productRepository.updateProduct(id, existing);
     }
 
     @Override
@@ -53,12 +56,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = existingProduct.get();
 
         product.setProductStatus(productStatus);
-        return productRepository.updateProduct(product);
+        return productRepository.updateProduct(id, product);
     }
 
     @Override
     public Product createProduct(Product product)
     {
+        product.setProductStatus(ProductStatus.DRAFT);
         return productRepository.createProduct(product);
     }
 }
