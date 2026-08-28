@@ -6,6 +6,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductCre
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductStatusUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.request.ProductUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.response.ProductResponse;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,7 +34,8 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ProductResponse createProduct(@RequestBody ProductCreateRequest request)
+    public ProductResponse createProduct(
+            @Valid  @RequestBody ProductCreateRequest request)
     {
         return productService.createProduct(request);
     }
@@ -41,7 +43,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ProductResponse updateProduct(
             @PathVariable Long id,
-            @RequestBody ProductUpdateRequest request
+            @Valid @RequestBody ProductUpdateRequest request
             )
     {
         return productService.updateProduct(id, request);
@@ -50,7 +52,7 @@ public class ProductController {
     @PatchMapping("/{id}")
     public ProductResponse updateProductStatus(
             @PathVariable Long id,
-            @RequestBody ProductStatusUpdateRequest request)
+            @Valid @RequestBody ProductStatusUpdateRequest request)
     {
         return productService.updateStatus(id, request);
     }
