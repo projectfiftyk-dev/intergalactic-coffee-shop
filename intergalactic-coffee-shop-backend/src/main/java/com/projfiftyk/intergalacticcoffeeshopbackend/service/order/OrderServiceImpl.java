@@ -11,6 +11,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.order.request.Orde
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.order.request.OrderUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.order.response.OrderResponse;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Service
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper mapper;
@@ -68,6 +70,7 @@ public class OrderServiceImpl implements OrderService {
         return mapper.map(updated);
     }
 
+    @Transactional
     @Override
     public List<OrderResponse> createOrder(List<OrderCreateRequest> request) {
         List<OrderResponse> response = new ArrayList<OrderResponse>();

@@ -15,4 +15,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void handleOrderNotFound() {}
 
+    @ExceptionHandler(OrderInvalidTransitionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void handleOrderInvalidTransition() {}
 }
