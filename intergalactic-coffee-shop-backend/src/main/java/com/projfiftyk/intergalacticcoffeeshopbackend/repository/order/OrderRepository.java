@@ -5,6 +5,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
 import java.util.List;
 
 public interface OrderRepository {
+
     List<Order> getOrders();
 
     Order getOrder(Long id);

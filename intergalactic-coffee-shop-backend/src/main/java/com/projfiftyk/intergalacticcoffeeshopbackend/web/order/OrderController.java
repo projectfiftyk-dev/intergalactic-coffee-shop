@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     @PostMapping()
-    List<OrderResponse> createOrder(@Valid @RequestBody List<OrderCreateRequest> requests)
+    OrderResponse createOrder(@Valid @RequestBody List<OrderCreateRequest> requests)
     {
         return orderService.createOrder(requests);
     }

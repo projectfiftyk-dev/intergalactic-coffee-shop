@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.service.order;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderInvalidTransitionException;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.internal.matchers.Or;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class OrderServiceImplTest {
+
     private OrderRepository repository;
     private OrderMapper mapper;
     private ProductService productService;
@@ -38,7 +39,12 @@ public class OrderServiceImplTest {
         repository = mock(OrderRepository.class);
         mapper = mock(OrderMapper.class);
         productService = mock(ProductService.class);
-        service = new OrderServiceImpl(repository, mapper, productService);
+
+        service = new OrderServiceImpl(
+                repository,
+                mapper,
+                productService
+        );
     }
 
     @Test
@@ -52,15 +58,15 @@ public class OrderServiceImplTest {
         List<OrderResponse> mappedOrders = List.of(
                 new OrderResponse(
                         1L,
-                        "Espresso",
                         OrderStatus.CREATED,
-                        LocalDateTime.of(2026, 8, 28, 10, 0)
+                        LocalDateTime.of(2026, 8, 28, 10, 0),
+                        List.of()
                 ),
                 new OrderResponse(
                         2L,
-                        "Cappuccino",
                         OrderStatus.CREATED,
-                        LocalDateTime.of(2026, 8, 28, 11, 0)
+                        LocalDateTime.of(2026, 8, 28, 11, 0),
+                        List.of()
                 )
         );
 
@@ -68,41 +74,47 @@ public class OrderServiceImplTest {
         when(mapper.map(anyList())).thenReturn(mappedOrders);
 
         // Act
-        List<OrderResponse> resulted = service.listOrders();
+        List<OrderResponse> result = service.listOrders();
 
         // Assert
-        assertEquals(2, resulted.size());
-        assertEquals(mappedOrders, resulted);
+        assertEquals(2, result.size());
+        assertEquals(mappedOrders, result);
     }
 
     @Test
-    void shouldReturnOrderOnGet(){
+    void shouldReturnOrderOnGet() {
         // Arrange
         LocalDateTime dateTime = LocalDateTime.now();
 
+        OrderItem item = new OrderItem();
+        item.setId(1L);
+        item.setOrderId(1L);
+        item.setProductId(1L);
+        item.setProductName("Espresso");
+
         Order order = new Order();
         order.setId(1L);
-        order.setProductName("Espresso");
         order.setStatus(OrderStatus.CREATED);
         order.setCreatedAt(dateTime);
+        order.setOrderItems(List.of(item));
 
         OrderResponse mappedOrder = new OrderResponse(
                 1L,
-                "Espresso",
                 OrderStatus.CREATED,
-                dateTime
+                dateTime,
+                List.of()
         );
 
         when(repository.getOrder(1L)).thenReturn(order);
         when(mapper.map(any(Order.class))).thenReturn(mappedOrder);
 
         // Act
-        OrderResponse resulted = service.getOrder(1L);
+        OrderResponse result = service.getOrder(1L);
 
         // Assert
-        assertNotNull(resulted);
-        assertEquals(mappedOrder, resulted);
-        assertEquals("Espresso", resulted.productName());
+        assertNotNull(result);
+        assertEquals(mappedOrder, result);
+        assertEquals(OrderStatus.CREATED, result.status());
     }
 
     @ParameterizedTest
@@ -116,31 +128,42 @@ public class OrderServiceImplTest {
             OrderStatus newStatus
     ) {
         // Arrange
+        OrderItem item = new OrderItem();
+        item.setProductId(1L);
+        item.setProductName("Espresso");
+
         Order order = new Order();
         order.setId(1L);
-        order.setProductName("Espresso");
         order.setStatus(currentStatus);
+        order.setOrderItems(List.of(item));
 
         Order updatedOrder = new Order();
         updatedOrder.setId(1L);
-        updatedOrder.setProductName("Espresso");
         updatedOrder.setStatus(newStatus);
+        updatedOrder.setOrderItems(List.of(item));
 
         OrderResponse mappedOrder = new OrderResponse(
                 1L,
-                "Espresso",
                 newStatus,
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                List.of()
         );
 
-        OrderUpdateRequest request = new OrderUpdateRequest(newStatus);
+        OrderUpdateRequest request =
+                new OrderUpdateRequest(newStatus);
 
-        when(repository.getOrder(1L)).thenReturn(order);
-        when(repository.updateOrder(1L, order)).thenReturn(updatedOrder);
-        when(mapper.map(updatedOrder)).thenReturn(mappedOrder);
+        when(repository.getOrder(1L))
+                .thenReturn(order);
+
+        when(repository.updateOrder(1L, order))
+                .thenReturn(updatedOrder);
+
+        when(mapper.map(updatedOrder))
+                .thenReturn(mappedOrder);
 
         // Act
-        OrderResponse result = service.updateOrder(1L, request);
+        OrderResponse result =
+                service.updateOrder(1L, request);
 
         // Assert
         assertEquals(newStatus, result.status());
@@ -170,13 +193,15 @@ public class OrderServiceImplTest {
         OrderUpdateRequest request =
                 new OrderUpdateRequest(newStatus);
 
-        when(repository.getOrder(1L)).thenReturn(order);
+        when(repository.getOrder(1L))
+                .thenReturn(order);
 
         // Act & Assert
-        OrderInvalidTransitionException exception = assertThrows(
-                OrderInvalidTransitionException.class,
-                () -> service.updateOrder(1L, request)
-        );
+        OrderInvalidTransitionException exception =
+                assertThrows(
+                        OrderInvalidTransitionException.class,
+                        () -> service.updateOrder(1L, request)
+                );
 
         assertEquals(
                 "Cannot change order status from "
@@ -199,20 +224,25 @@ public class OrderServiceImplTest {
                 ProductStatus.ACTIVE
         );
 
+        OrderItem item = new OrderItem();
+        item.setId(1L);
+        item.setOrderId(1L);
+        item.setProductId(1L);
+        item.setProductName("Espresso");
+
         Order createdOrder = new Order();
         createdOrder.setId(1L);
-        createdOrder.setProductId(1L);
-        createdOrder.setProductName("Espresso");
         createdOrder.setStatus(OrderStatus.CREATED);
         createdOrder.setCreatedAt(
                 LocalDateTime.of(2026, 8, 30, 15, 0)
         );
+        createdOrder.setOrderItems(List.of(item));
 
         OrderResponse mappedOrder = new OrderResponse(
                 1L,
-                "Espresso",
                 OrderStatus.CREATED,
-                createdOrder.getCreatedAt()
+                createdOrder.getCreatedAt(),
+                List.of()
         );
 
         when(productService.getProduct(1L))
@@ -225,14 +255,13 @@ public class OrderServiceImplTest {
                 .thenReturn(mappedOrder);
 
         // Act
-        List<OrderResponse> result =
+        OrderResponse result =
                 service.createOrder(List.of(request));
 
         // Assert
-        assertEquals(1, result.size());
-        assertEquals(mappedOrder, result.get(0));
-        assertEquals("Espresso", result.get(0).productName());
-        assertEquals(OrderStatus.CREATED, result.get(0).status());
+        assertNotNull(result);
+        assertEquals(mappedOrder, result);
+        assertEquals(OrderStatus.CREATED, result.status());
     }
 
     @Test
@@ -245,10 +274,11 @@ public class OrderServiceImplTest {
                 .thenThrow(new ProductNotFoundException(99L));
 
         // Act & Assert
-        ProductNotFoundException exception = assertThrows(
-                ProductNotFoundException.class,
-                () -> service.createOrder(List.of(request))
-        );
+        ProductNotFoundException exception =
+                assertThrows(
+                        ProductNotFoundException.class,
+                        () -> service.createOrder(List.of(request))
+                );
 
         assertEquals(
                 "Product with id 99 was not found",

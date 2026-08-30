@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.service.order;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderInvalidTransitionException;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
     private final OrderRepository orderRepository;
     private final OrderMapper mapper;
     private final ProductService productService;
@@ -42,8 +44,8 @@ public class OrderServiceImpl implements OrderService {
     public OrderServiceImpl(
             OrderRepository orderRepository,
             OrderMapper mapper,
-            ProductService productService)
-    {
+            ProductService productService
+    ) {
         this.orderRepository = orderRepository;
         this.mapper = mapper;
         this.productService = productService;
@@ -62,37 +64,55 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse updateOrder(Long id, OrderUpdateRequest request) {
+    public OrderResponse updateOrder(
+            Long id,
+            OrderUpdateRequest request
+    ) {
         Order order = orderRepository.getOrder(id);
-        validateTransition(order.getStatus(), request.status());
+
+        validateTransition(
+                order.getStatus(),
+                request.status()
+        );
+
         order.setStatus(request.status());
+
         Order updated = orderRepository.updateOrder(id, order);
+
         return mapper.map(updated);
     }
 
     @Transactional
     @Override
-    public List<OrderResponse> createOrder(List<OrderCreateRequest> request) {
-        List<OrderResponse> response = new ArrayList<OrderResponse>();
+    public OrderResponse createOrder(
+            List<OrderCreateRequest> requests
+    ) {
+        Order order = new Order();
 
-        for (OrderCreateRequest createRequest: request)
-        {
-            for (int i = 0; i < createRequest.quantity(); i++)
-            {
-                ProductResponse product = productService.getProduct(createRequest.productId());
-                Order order = new Order();
-                order.setStatus(OrderStatus.CREATED);
-                order.setProductId(product.id());
-                order.setProductName(product.name());
-                order.setCreatedAt(LocalDateTime.now());
+        order.setStatus(OrderStatus.CREATED);
+        order.setCreatedAt(LocalDateTime.now());
 
-                Order created = orderRepository.createOrder(order);
-                OrderResponse mapped = mapper.map(created);
-                response.add(mapped);
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for (OrderCreateRequest request : requests) {
+
+            ProductResponse product =
+                    productService.getProduct(request.productId());
+
+            for (int i = 0; i < request.quantity(); i++) {
+                OrderItem orderItem = new OrderItem();
+
+                orderItem.setProductId(product.id());
+                orderItem.setProductName(product.name());
+
+                orderItems.add(orderItem);
             }
         }
 
-        return response;
+        order.setOrderItems(orderItems);
+
+        Order created = orderRepository.createOrder(order);
+        return mapper.map(created);
     }
 
     private void validateTransition(
@@ -100,10 +120,16 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus target
     ) {
         Set<OrderStatus> allowed =
-                allowedTransitions.getOrDefault(current, Set.of());
+                allowedTransitions.getOrDefault(
+                        current,
+                        Set.of()
+                );
 
         if (!allowed.contains(target)) {
-            throw new OrderInvalidTransitionException(current, target);
+            throw new OrderInvalidTransitionException(
+                    current,
+                    target
+            );
         }
     }
 }

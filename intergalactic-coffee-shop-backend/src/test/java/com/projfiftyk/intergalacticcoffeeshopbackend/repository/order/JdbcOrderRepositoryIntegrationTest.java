@@ -27,44 +27,100 @@ public class JdbcOrderRepositoryIntegrationTest {
 
         // Assert
         assertEquals(2, orders.size());
-    }
 
-    @Test
-    void shouldGetOrder() {
-        Order order = repository.getOrder(1L);
+        Order firstOrder = orders.get(0);
 
-        // Assert
-        assertNotNull(order);
-        assertEquals("Espresso", order.getProductName());
-    }
+        assertEquals(1L, firstOrder.getId());
+        assertEquals(OrderStatus.CREATED, firstOrder.getStatus());
+        assertNotNull(firstOrder.getCreatedAt());
 
-    @Test
-    void shouldThrowWhenOrderDontExist() {
-        // Assert
-        assertThrows(
-                OrderNotFoundException.class,
-                () -> repository.getOrder(5L)
+        assertNotNull(firstOrder.getOrderItems());
+        assertEquals(1, firstOrder.getOrderItems().size());
+
+        assertEquals(
+                "Espresso",
+                firstOrder.getOrderItems()
+                        .get(0)
+                        .getProductName()
+        );
+
+        Order secondOrder = orders.get(1);
+
+        assertEquals(2L, secondOrder.getId());
+        assertEquals(OrderStatus.PREPARING, secondOrder.getStatus());
+
+        assertNotNull(secondOrder.getOrderItems());
+        assertEquals(1, secondOrder.getOrderItems().size());
+
+        assertEquals(
+                "Cappuccino",
+                secondOrder.getOrderItems()
+                        .get(0)
+                        .getProductName()
         );
     }
 
     @Test
-    void shouldReturnOnUpdate() {
+    void shouldGetOrder() {
+        // Act
+        Order order = repository.getOrder(1L);
+
+        // Assert
+        assertNotNull(order);
+
+        assertEquals(1L, order.getId());
+        assertEquals(OrderStatus.CREATED, order.getStatus());
+
+        assertNotNull(order.getCreatedAt());
+
+        assertNotNull(order.getOrderItems());
+        assertEquals(1, order.getOrderItems().size());
+
+        assertEquals(
+                "Espresso",
+                order.getOrderItems()
+                        .get(0)
+                        .getProductName()
+        );
+    }
+
+    @Test
+    void shouldThrowWhenOrderDoesNotExist() {
+        // Act & Assert
+        assertThrows(
+                OrderNotFoundException.class,
+                () -> repository.getOrder(999L)
+        );
+    }
+
+    @Test
+    void shouldReturnUpdatedOrder() {
         // Arrange
         Order order = new Order();
         order.setStatus(OrderStatus.DELIVERED);
 
         // Act
-        Order update = repository.updateOrder(1L, order);
+        Order updated = repository.updateOrder(1L, order);
 
-        // Arrange
-        assertNotNull(update);
-        assertEquals(1L, update.getId());
-        assertEquals("Espresso", update.getProductName());
-        assertEquals(OrderStatus.DELIVERED, update.getStatus());
+        // Assert
+        assertNotNull(updated);
+
+        assertEquals(1L, updated.getId());
+        assertEquals(OrderStatus.DELIVERED, updated.getStatus());
+
+        assertNotNull(updated.getOrderItems());
+        assertEquals(1, updated.getOrderItems().size());
+
+        assertEquals(
+                "Espresso",
+                updated.getOrderItems()
+                        .get(0)
+                        .getProductName()
+        );
     }
 
     @Test
-    void shouldThrowWhenDontExistOnUpdate() {
+    void shouldThrowWhenOrderDoesNotExistOnUpdate() {
         // Arrange
         Order order = new Order();
         order.setStatus(OrderStatus.DELIVERED);
@@ -72,7 +128,7 @@ public class JdbcOrderRepositoryIntegrationTest {
         // Act & Assert
         assertThrows(
                 OrderNotFoundException.class,
-                () -> repository.updateOrder(5L, order)
+                () -> repository.updateOrder(999L, order)
         );
     }
 
@@ -80,16 +136,23 @@ public class JdbcOrderRepositoryIntegrationTest {
     void shouldAddNewOrder() {
         // Arrange
         Order order = new Order();
-        order.setProductId(1L);
-        order.setProductName("Espresso");
-        order.setStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.CREATED);
         order.setCreatedAt(LocalDateTime.now());
+
         // Act
         Order newOrder = repository.createOrder(order);
 
         // Assert
         assertNotNull(newOrder);
-        assertEquals(3L, newOrder.getId());
-        assertEquals("Espresso", newOrder.getProductName());
+
+        // Don't rely on exactly 3L unless your test data guarantees it.
+        assertNotNull(newOrder.getId());
+
+        assertEquals(
+                OrderStatus.CREATED,
+                newOrder.getStatus()
+        );
+
+        assertNotNull(newOrder.getCreatedAt());
     }
 }

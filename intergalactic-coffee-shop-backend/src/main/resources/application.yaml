@@ -1,3 +1,9 @@
 spring:
   application:
     name: intergalactic-coffee-shop-backend
+
+  datasource:
+    url: jdbc:h2:mem:coffee-shop
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
