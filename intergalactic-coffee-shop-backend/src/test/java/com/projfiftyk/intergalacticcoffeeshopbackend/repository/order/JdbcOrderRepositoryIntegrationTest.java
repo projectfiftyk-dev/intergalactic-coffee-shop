@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.repository.order;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -70,7 +71,6 @@ public class JdbcOrderRepositoryIntegrationTest {
 
         assertEquals(1L, order.getId());
         assertEquals(OrderStatus.CREATED, order.getStatus());
-
         assertNotNull(order.getCreatedAt());
 
         assertNotNull(order.getOrderItems());
@@ -86,7 +86,6 @@ public class JdbcOrderRepositoryIntegrationTest {
 
     @Test
     void shouldThrowWhenOrderDoesNotExist() {
-        // Act & Assert
         assertThrows(
                 OrderNotFoundException.class,
                 () -> repository.getOrder(999L)
@@ -104,7 +103,6 @@ public class JdbcOrderRepositoryIntegrationTest {
 
         // Assert
         assertNotNull(updated);
-
         assertEquals(1L, updated.getId());
         assertEquals(OrderStatus.DELIVERED, updated.getStatus());
 
@@ -133,26 +131,80 @@ public class JdbcOrderRepositoryIntegrationTest {
     }
 
     @Test
-    void shouldAddNewOrder() {
+    void shouldCreateOrder() {
         // Arrange
         Order order = new Order();
         order.setStatus(OrderStatus.CREATED);
         order.setCreatedAt(LocalDateTime.now());
 
         // Act
-        Order newOrder = repository.createOrder(order);
+        Order created = repository.createOrder(order);
 
         // Assert
-        assertNotNull(newOrder);
+        assertNotNull(created);
+        assertNotNull(created.getId());
+        assertEquals(OrderStatus.CREATED, created.getStatus());
+        assertNotNull(created.getCreatedAt());
+    }
 
-        // Don't rely on exactly 3L unless your test data guarantees it.
-        assertNotNull(newOrder.getId());
+    @Test
+    void shouldAddOrderItem() {
+        // Arrange
+        OrderItem item = new OrderItem();
+        item.setProductId(1L);
+        item.setProductName("Espresso");
 
-        assertEquals(
-                OrderStatus.CREATED,
-                newOrder.getStatus()
+        // Act
+        OrderItem createdItem = repository.addOrderItem(1L, item);
+
+        // Assert
+        assertNotNull(createdItem);
+        assertNotNull(createdItem.getId());
+
+        assertEquals(1L, createdItem.getOrderId());
+        assertEquals(1L, createdItem.getProductId());
+        assertEquals("Espresso", createdItem.getProductName());
+    }
+
+    @Test
+    void shouldCreateOrderWithOrderItem() {
+        // Arrange
+        Order order = new Order();
+        order.setStatus(OrderStatus.CREATED);
+        order.setCreatedAt(LocalDateTime.now());
+
+        // Act
+        Order createdOrder = repository.createOrder(order);
+
+        OrderItem item = new OrderItem();
+        item.setProductId(1L);
+        item.setProductName("Espresso");
+
+        OrderItem createdItem = repository.addOrderItem(
+                createdOrder.getId(),
+                item
         );
 
-        assertNotNull(newOrder.getCreatedAt());
+        // Assert
+        assertNotNull(createdOrder.getId());
+        assertNotNull(createdItem.getId());
+
+        assertEquals(
+                createdOrder.getId(),
+                createdItem.getOrderId()
+        );
+
+        // Verify the relationship by loading the order again
+        Order loadedOrder = repository.getOrder(createdOrder.getId());
+
+        assertEquals(1, loadedOrder.getOrderItems().size());
+
+        OrderItem loadedItem = loadedOrder
+                .getOrderItems()
+                .get(0);
+
+        assertEquals(createdItem.getId(), loadedItem.getId());
+        assertEquals(1L, loadedItem.getProductId());
+        assertEquals("Espresso", loadedItem.getProductName());
     }
 }

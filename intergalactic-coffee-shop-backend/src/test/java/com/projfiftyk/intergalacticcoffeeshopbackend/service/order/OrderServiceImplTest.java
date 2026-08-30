@@ -19,11 +19,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -236,7 +236,7 @@ public class OrderServiceImplTest {
         createdOrder.setCreatedAt(
                 LocalDateTime.of(2026, 8, 30, 15, 0)
         );
-        createdOrder.setOrderItems(List.of(item));
+        createdOrder.setOrderItems(new ArrayList<>());
 
         OrderResponse mappedOrder = new OrderResponse(
                 1L,
@@ -250,6 +250,11 @@ public class OrderServiceImplTest {
 
         when(repository.createOrder(any(Order.class)))
                 .thenReturn(createdOrder);
+
+        when(repository.addOrderItem(
+                eq(1L),
+                any(OrderItem.class)
+        )).thenReturn(item);
 
         when(mapper.map(any(Order.class)))
                 .thenReturn(mappedOrder);

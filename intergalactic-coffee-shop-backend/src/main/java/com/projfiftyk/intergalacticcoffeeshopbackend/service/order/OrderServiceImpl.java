@@ -3,7 +3,6 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.service.order;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderInvalidTransitionException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.order.OrderMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.order.OrderRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.CREATED);
         order.setCreatedAt(LocalDateTime.now());
 
-        List<OrderItem> orderItems = new ArrayList<>();
+        Order created = orderRepository.createOrder(order);
 
         for (OrderCreateRequest request : requests) {
 
@@ -105,13 +103,14 @@ public class OrderServiceImpl implements OrderService {
                 orderItem.setProductId(product.id());
                 orderItem.setProductName(product.name());
 
-                orderItems.add(orderItem);
+                OrderItem inserted = orderRepository.addOrderItem(
+                        created.getId(), orderItem
+                );
+
+                created.getOrderItems().add(inserted);
             }
         }
 
-        order.setOrderItems(orderItems);
-
-        Order created = orderRepository.createOrder(order);
         return mapper.map(created);
     }
 

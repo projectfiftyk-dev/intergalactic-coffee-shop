@@ -150,6 +150,46 @@ public class JdbcOrderRepository implements OrderRepository {
         return getOrder(generatedId);
     }
 
+    @Override
+    public OrderItem addOrderItem(Long orderId, OrderItem item) {
+        String sql = """
+            INSERT INTO order_items (
+                order_id,
+                product_id,
+                product_name
+            )
+            VALUES (?, ?, ?)
+            """;
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
+                    sql,
+                    Statement.RETURN_GENERATED_KEYS
+            );
+
+            ps.setLong(1, orderId);
+            ps.setLong(2, item.getProductId());
+            ps.setString(3, item.getProductName());
+
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+
+        if (key == null) {
+            throw new IllegalStateException(
+                    "Failed to generate Order Item ID"
+            );
+        }
+
+        item.setId(key.longValue());
+        item.setOrderId(orderId);
+
+        return item;
+    }
+
     private List<OrderItem> getOrderItems(Long orderId) {
         String sql = """
                 SELECT id, order_id, product_id, product_name
