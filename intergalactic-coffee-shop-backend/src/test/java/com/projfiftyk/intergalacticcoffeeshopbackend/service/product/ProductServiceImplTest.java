@@ -90,24 +90,6 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    void shouldThrowWhenProductDoesNotExist() {
-        // Arrange
-        when(repository.getProduct(3L))
-                .thenThrow(new ProductNotFoundException(3L));
-
-        // Act & Assert
-        ProductNotFoundException exception = assertThrows(
-                ProductNotFoundException.class,
-                () -> service.getProduct(3L)
-        );
-
-        assertEquals(
-                "Product with id 3 was not found",
-                exception.getMessage()
-        );
-    }
-
-    @Test
     void shouldUpdateProduct() {
         // Arrange
         Product existingProduct = new Product();
@@ -139,26 +121,6 @@ public class ProductServiceImplTest {
         // Assert
         assertEquals(mappedProduct, result);
         assertEquals("Latte", existingProduct.getName());
-    }
-
-    @Test
-    void shouldThrowOnUpdateWhenProductDoesNotExist() {
-        // Arrange
-        ProductUpdateRequest request = new ProductUpdateRequest("Latte");
-
-        when(repository.getProduct(5L))
-                .thenThrow(new ProductNotFoundException(5L));
-
-        // Act & Assert
-        ProductNotFoundException exception = assertThrows(
-                ProductNotFoundException.class,
-                () -> service.updateProduct(5L, request)
-        );
-
-        assertEquals(
-                "Product with id 5 was not found",
-                exception.getMessage()
-        );
     }
 
     @Test
@@ -250,5 +212,48 @@ public class ProductServiceImplTest {
         // Assert
         assertEquals("Machiato", result.name());
         assertEquals(ProductStatus.DRAFT, result.productStatus());
+    }
+
+    @Test
+    void shouldThrowWhenProductDoesNotExist() {
+        // Arrange
+        Long productId = 3L;
+
+        when(repository.getProduct(productId))
+                .thenReturn(null);
+
+        // Act & Assert
+        ProductNotFoundException exception = assertThrows(
+                ProductNotFoundException.class,
+                () -> service.getProduct(productId)
+        );
+
+        assertEquals(
+                "Product with id 3 was not found",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void shouldThrowOnUpdateWhenProductDoesNotExist() {
+        // Arrange
+        Long productId = 5L;
+
+        ProductUpdateRequest request =
+                new ProductUpdateRequest("Latte");
+
+        when(repository.getProduct(productId))
+                .thenReturn(null);
+
+        // Act & Assert
+        ProductNotFoundException exception = assertThrows(
+                ProductNotFoundException.class,
+                () -> service.updateProduct(productId, request)
+        );
+
+        assertEquals(
+                "Product with id 5 was not found",
+                exception.getMessage()
+        );
     }
 }

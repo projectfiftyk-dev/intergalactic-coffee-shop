@@ -40,15 +40,6 @@ public class JdbcProductRepositoryIntegrationTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenProductDontExist(){
-        // Act & Assert
-        assertThrows(
-                ProductNotFoundException.class,
-                () -> repository.getProduct(24L)
-        );
-    }
-
-    @Test
     void updateShouldReturnTheUpdatedProduct() {
         // Arrange
         Product product = new Product();
@@ -61,20 +52,6 @@ public class JdbcProductRepositoryIntegrationTest {
         assertEquals("Latte", updatedProduct.getName());
         assertEquals(ProductStatus.ACTIVE, updatedProduct.getProductStatus());
         assertEquals(2L, updatedProduct.getId());
-    }
-
-    @Test
-    void updateShouldReturnEmptyWhenProductDontExist() {
-        // Arrange
-        Product product = new Product();
-        product.setName("Latte");
-        product.setProductStatus(ProductStatus.ACTIVE);
-
-        // Act & Arrange
-        Exception ex = assertThrows(
-                ProductNotFoundException.class,
-                () -> repository.updateProduct(23L, product)
-        );
     }
 
     @Test

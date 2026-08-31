@@ -55,7 +55,10 @@ public class JdbcProductRepository implements ProductRepository{
                 sql, productRowMapper, id
         );
 
-        return products.stream().findFirst().orElseThrow(() -> new ProductNotFoundException(id));
+        if (products.isEmpty())
+            return null;
+
+        return products.get(0);
     }
 
     @Override
@@ -75,7 +78,7 @@ public class JdbcProductRepository implements ProductRepository{
 
         if (rowsUpdated == 0)
         {
-            throw new ProductNotFoundException(id);
+            return null;
         }
 
         return  getProduct(id);

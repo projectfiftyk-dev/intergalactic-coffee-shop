@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.service.promotion;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
@@ -33,12 +34,18 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public PromotionResponse getPromotion(Long id) {
         Promotion promotion = promotionRepository.getPromotion(id);
+        if (promotion == null)
+            throw new PromotionNotFoundException(id);
+
         return mapper.map(promotion);
     }
 
     @Override
     public PromotionResponse updatePromotion(Long id, PromotionUpdateRequest request) {
         Promotion promotion = promotionRepository.getPromotion(id);
+        if (promotion == null)
+            throw new PromotionNotFoundException(id);
+
         Promotion promotionToUpdate = mapper.map(request);
         promotionToUpdate.setStatus(promotion.getStatus());
         Promotion resulted = promotionRepository.updatePromotion(id, promotionToUpdate);
@@ -48,6 +55,9 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public PromotionResponse updatePromotion(Long id, PromotionLifecycleUpdateRequest request) {
         Promotion promotion = promotionRepository.getPromotion(id);
+        if (promotion == null)
+            throw new PromotionNotFoundException(id);
+
         promotion.setStatus(request.status());
         Promotion resulted = promotionRepository.updatePromotion(id, promotion);
         return mapper.map(resulted);

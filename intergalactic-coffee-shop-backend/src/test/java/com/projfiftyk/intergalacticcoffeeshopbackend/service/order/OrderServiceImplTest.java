@@ -5,6 +5,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderInvalidTransitionException;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.order.OrderMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.order.OrderRepository;
@@ -287,6 +288,51 @@ public class OrderServiceImplTest {
 
         assertEquals(
                 "Product with id 99 was not found",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void shouldThrowWhenGettingNonExistingOrder() {
+        // Arrange
+        Long orderId = 999L;
+
+        when(repository.getOrder(orderId))
+                .thenThrow(new OrderNotFoundException(orderId));
+
+        // Act & Assert
+        OrderNotFoundException exception =
+                assertThrows(
+                        OrderNotFoundException.class,
+                        () -> service.getOrder(orderId)
+                );
+
+        assertEquals(
+                "Order with id 999 was not found",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingNonExistingOrder() {
+        // Arrange
+        Long orderId = 999L;
+
+        OrderUpdateRequest request =
+                new OrderUpdateRequest(OrderStatus.PAID);
+
+        when(repository.getOrder(orderId))
+                .thenThrow(new OrderNotFoundException(orderId));
+
+        // Act & Assert
+        OrderNotFoundException exception =
+                assertThrows(
+                        OrderNotFoundException.class,
+                        () -> service.updateOrder(orderId, request)
+                );
+
+        assertEquals(
+                "Order with id 999 was not found",
                 exception.getMessage()
         );
     }

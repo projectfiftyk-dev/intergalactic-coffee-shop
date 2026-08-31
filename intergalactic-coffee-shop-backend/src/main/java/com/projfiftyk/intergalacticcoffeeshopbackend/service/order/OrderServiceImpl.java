@@ -4,6 +4,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.Order;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderItem;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.order.OrderStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderInvalidTransitionException;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.OrderNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.order.OrderMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.order.OrderRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.service.product.ProductService;
@@ -58,6 +59,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getOrder(Long id) {
         Order order = orderRepository.getOrder(id);
+        if (order == null)
+            throw new OrderNotFoundException(id);
+
         return mapper.map(order);
     }
 
@@ -67,6 +71,8 @@ public class OrderServiceImpl implements OrderService {
             OrderUpdateRequest request
     ) {
         Order order = orderRepository.getOrder(id);
+        if (order == null)
+            throw new OrderNotFoundException(id);
 
         validateTransition(
                 order.getStatus(),

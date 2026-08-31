@@ -76,15 +76,16 @@ public class JdbcOrderRepository implements OrderRepository {
                 WHERE id = ?
                 """;
 
-        Order order = jdbcTemplate.query(
+        List<Order> orders = jdbcTemplate.query(
                         sql,
                         orderRowMapper,
                         id
-                )
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                );
 
+        if (orders.isEmpty())
+            return null;
+
+        Order order = orders.get(0);
         order.setOrderItems(getOrderItems(id));
 
         return order;
@@ -105,7 +106,7 @@ public class JdbcOrderRepository implements OrderRepository {
         );
 
         if (rowsUpdated == 0) {
-            throw new OrderNotFoundException(id);
+            return null;
         }
 
         return getOrder(id);

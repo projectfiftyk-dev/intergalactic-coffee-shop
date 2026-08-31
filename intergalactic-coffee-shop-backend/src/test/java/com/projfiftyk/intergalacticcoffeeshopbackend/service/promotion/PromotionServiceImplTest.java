@@ -4,6 +4,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionRewardType;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
@@ -290,6 +291,114 @@ class PromotionServiceImplTest {
         );
 
         return promotion;
+    }
+
+    @Test
+    void shouldThrowWhenPromotionDoesNotExist() {
+        // Arrange
+        Long promotionId = 99L;
+
+        when(promotionRepository.getPromotion(promotionId))
+                .thenReturn(null);
+
+        // Act & Assert
+        PromotionNotFoundException exception =
+                assertThrows(
+                        PromotionNotFoundException.class,
+                        () -> service.getPromotion(promotionId)
+                );
+
+        assertEquals(
+                "Promotion with id 99 was not found",
+                exception.getMessage()
+        );
+
+        verify(promotionRepository)
+                .getPromotion(promotionId);
+
+        verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingNonExistingPromotion() {
+        // Arrange
+        Long promotionId = 99L;
+
+        PromotionUpdateRequest request =
+                new PromotionUpdateRequest(
+                        LocalDateTime.of(2026, 9, 1, 10, 0),
+                        LocalDateTime.of(2026, 10, 1, 10, 0),
+                        PromotionType.PRODUCT_DISCOUNT,
+                        null,
+                        null,
+                        List.of(1L),
+                        null,
+                        PromotionRewardType.PERCENTAGE,
+                        BigDecimal.valueOf(20)
+                );
+
+        when(promotionRepository.getPromotion(promotionId))
+                .thenReturn(null);
+
+        // Act & Assert
+        PromotionNotFoundException exception =
+                assertThrows(
+                        PromotionNotFoundException.class,
+                        () -> service.updatePromotion(
+                                promotionId,
+                                request
+                        )
+                );
+
+        assertEquals(
+                "Promotion with id 99 was not found",
+                exception.getMessage()
+        );
+
+        verify(promotionRepository)
+                .getPromotion(promotionId);
+
+        verifyNoInteractions(mapper);
+
+        verify(promotionRepository, never())
+                .updatePromotion(anyLong(), any());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingLifecycleOfNonExistingPromotion() {
+        // Arrange
+        Long promotionId = 99L;
+
+        PromotionLifecycleUpdateRequest request =
+                new PromotionLifecycleUpdateRequest(
+                        PromotionStatus.ACTIVE
+                );
+
+        when(promotionRepository.getPromotion(promotionId))
+                .thenReturn(null);
+
+        // Act & Assert
+        PromotionNotFoundException exception =
+                assertThrows(
+                        PromotionNotFoundException.class,
+                        () -> service.updatePromotion(
+                                promotionId,
+                                request
+                        )
+                );
+
+        assertEquals(
+                "Promotion with id 99 was not found",
+                exception.getMessage()
+        );
+
+        verify(promotionRepository)
+                .getPromotion(promotionId);
+
+        verify(promotionRepository, never())
+                .updatePromotion(anyLong(), any());
+
+        verifyNoInteractions(mapper);
     }
 
     private PromotionResponse createResponse(Long id) {

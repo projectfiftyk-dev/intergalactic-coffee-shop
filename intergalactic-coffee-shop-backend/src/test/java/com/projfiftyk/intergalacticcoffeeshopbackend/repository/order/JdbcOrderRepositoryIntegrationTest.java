@@ -85,14 +85,6 @@ public class JdbcOrderRepositoryIntegrationTest {
     }
 
     @Test
-    void shouldThrowWhenOrderDoesNotExist() {
-        assertThrows(
-                OrderNotFoundException.class,
-                () -> repository.getOrder(999L)
-        );
-    }
-
-    @Test
     void shouldReturnUpdatedOrder() {
         // Arrange
         Order order = new Order();
@@ -114,19 +106,6 @@ public class JdbcOrderRepositoryIntegrationTest {
                 updated.getOrderItems()
                         .get(0)
                         .getProductName()
-        );
-    }
-
-    @Test
-    void shouldThrowWhenOrderDoesNotExistOnUpdate() {
-        // Arrange
-        Order order = new Order();
-        order.setStatus(OrderStatus.DELIVERED);
-
-        // Act & Assert
-        assertThrows(
-                OrderNotFoundException.class,
-                () -> repository.updateOrder(999L, order)
         );
     }
 

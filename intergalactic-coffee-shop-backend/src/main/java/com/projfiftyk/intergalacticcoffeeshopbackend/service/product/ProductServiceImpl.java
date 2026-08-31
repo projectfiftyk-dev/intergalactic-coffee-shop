@@ -2,6 +2,7 @@ package com.projfiftyk.intergalacticcoffeeshopbackend.service.product;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
+import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
@@ -36,6 +37,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProduct(Long id) {
         Product product = productRepository.getProduct(id);
+        if (product == null)
+            throw new ProductNotFoundException(id);
         return mapper.map(product);
     }
 
@@ -43,6 +46,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request)
     {
         Product product = productRepository.getProduct(id);
+        if (product == null)
+            throw new ProductNotFoundException((id));
+
         product.setName(request.name());
         Product updated = productRepository.updateProduct(id, product);
         return mapper.map(updated);
@@ -52,6 +58,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateStatus(Long id, ProductStatusUpdateRequest productStatus)
     {
         Product product = productRepository.getProduct(id);
+        if (product == null)
+            throw new ProductNotFoundException(id);
+
         product.setProductStatus(productStatus.productStatus());
         Product updated = productRepository.updateProduct(id, product);
         return mapper.map(updated);
