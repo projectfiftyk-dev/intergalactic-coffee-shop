@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,24 @@ public class PromotionMapperImpl implements PromotionMapper {
 
         promotion.setStartDate(request.startDate());
         promotion.setEndDate(request.endDate());
+        promotion.setPromotionType(request.promotionType());
+        promotion.setOccurrences(request.occurrences());
+        promotion.setMinimumValue(request.minimumValue());
+        promotion.setProductIds(request.productIds());
+        promotion.setRequiredProducts(request.requiredProducts());
+        promotion.setRewardType(request.rewardType());
+        promotion.setRewardValue(request.rewardValue());
+
+        return promotion;
+    }
+
+    @Override
+    public Promotion map(PromotionCreateRequest request) {
+        Promotion promotion = new Promotion();
+
+        promotion.setStartDate(request.startDate());
+        promotion.setEndDate(request.endDate());
+        promotion.setStatus(request.status());
         promotion.setPromotionType(request.promotionType());
         promotion.setOccurrences(request.occurrences());
         promotion.setMinimumValue(request.minimumValue());

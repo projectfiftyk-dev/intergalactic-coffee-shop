@@ -7,6 +7,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionT
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
@@ -399,6 +400,58 @@ class PromotionServiceImplTest {
                 .updatePromotion(anyLong(), any());
 
         verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void shouldCreatePromotion() {
+        // Arrange
+        PromotionCreateRequest request =
+                new PromotionCreateRequest(
+                        LocalDateTime.of(2026, 9, 1, 0, 0),
+                        LocalDateTime.of(2026, 9, 30, 23, 59),
+                        PromotionStatus.DRAFT,
+                        PromotionType.NTH_PURCHASE,
+                        5,
+                        BigDecimal.ZERO,
+                        List.of(1L, 2L),
+                        List.of(1L),
+                        PromotionRewardType.FIXED,
+                        BigDecimal.valueOf(5)
+                );
+
+        Promotion promotion = createPromotion(null);
+
+        Promotion createdPromotion = createPromotion(1L);
+
+        PromotionResponse response = createResponse(1L);
+
+        when(mapper.map(request))
+                .thenReturn(promotion);
+
+        when(promotionRepository.createPromotion(promotion))
+                .thenReturn(createdPromotion);
+
+        when(mapper.map(createdPromotion))
+                .thenReturn(response);
+
+        // Act
+        PromotionResponse result =
+                service.createPromotion(request);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(response, result);
+
+        assertNotNull(promotion.getCreatedAt());
+
+        verify(mapper)
+                .map(request);
+
+        verify(promotionRepository)
+                .createPromotion(promotion);
+
+        verify(mapper)
+                .map(createdPromotion);
     }
 
     private PromotionResponse createResponse(Long id) {

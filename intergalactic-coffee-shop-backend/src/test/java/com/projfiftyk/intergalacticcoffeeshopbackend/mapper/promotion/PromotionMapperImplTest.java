@@ -4,6 +4,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionRewardType;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -245,5 +246,88 @@ class PromotionMapperImplTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldMapCreateRequestToPromotion() {
+        // Arrange
+        LocalDateTime startDate =
+                LocalDateTime.of(2026, 9, 1, 0, 0);
+
+        LocalDateTime endDate =
+                LocalDateTime.of(2026, 9, 30, 23, 59);
+
+        PromotionCreateRequest request =
+                new PromotionCreateRequest(
+                        startDate,
+                        endDate,
+                        PromotionStatus.DRAFT,
+                        PromotionType.MINIMUM_VALUE,
+                        0,
+                        new BigDecimal("30.00"),
+                        List.of(1L, 2L),
+                        List.of(3L),
+                        PromotionRewardType.PERCENTAGE,
+                        new BigDecimal("10.00")
+                );
+
+        // Act
+        Promotion result = mapper.map(request);
+
+        // Assert
+        assertNotNull(result);
+
+        assertNull(result.getId());
+        assertNull(result.getCreatedAt());
+
+        assertEquals(
+                startDate,
+                result.getStartDate()
+        );
+
+        assertEquals(
+                endDate,
+                result.getEndDate()
+        );
+
+        assertEquals(
+                PromotionStatus.DRAFT,
+                result.getStatus()
+        );
+
+        assertEquals(
+                PromotionType.MINIMUM_VALUE,
+                result.getPromotionType()
+        );
+
+        assertEquals(
+                0,
+                result.getOccurrences()
+        );
+
+        assertEquals(
+                new BigDecimal("30.00"),
+                result.getMinimumValue()
+        );
+
+        assertEquals(
+                List.of(1L, 2L),
+                result.getProductIds()
+        );
+
+        assertEquals(
+                List.of(3L),
+                result.getRequiredProducts()
+        );
+
+        assertEquals(
+                PromotionRewardType.PERCENTAGE,
+                result.getRewardType()
+        );
+
+        assertEquals(
+                new BigDecimal("10.00"),
+                result.getRewardValue()
+        );
     }
 }

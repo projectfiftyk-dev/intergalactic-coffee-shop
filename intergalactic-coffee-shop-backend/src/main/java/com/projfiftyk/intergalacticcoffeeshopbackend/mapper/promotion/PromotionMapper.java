@@ -1,6 +1,7 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion;
 
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
 
@@ -12,4 +13,6 @@ public interface PromotionMapper {
     PromotionResponse map(Promotion promotion);
 
     Promotion map(PromotionUpdateRequest request);
+
+    Promotion map(PromotionCreateRequest request);
 }
