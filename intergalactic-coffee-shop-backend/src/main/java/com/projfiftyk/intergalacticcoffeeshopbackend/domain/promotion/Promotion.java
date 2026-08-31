@@ -1,9 +1,11 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class Promotion {
+
     private Long id;
     private LocalDateTime createdAt;
 
@@ -17,11 +19,11 @@ public class Promotion {
     // Type
     private PromotionType promotionType;
 
-    // NTH_Purchase
-    private int occurrences;
+    // NTH_PURCHASE
+    private Integer occurrences;
 
-    // Minimum_VALUE
-    private int minimumValue;
+    // MINIMUM_VALUE
+    private BigDecimal minimumValue;
 
     // PRODUCT_DISCOUNT
     private List<Long> productIds;
@@ -31,7 +33,7 @@ public class Promotion {
 
     // Reward
     private PromotionRewardType rewardType;
-    private float rewardValue;
+    private BigDecimal rewardValue;
 
     public Long getId() {
         return id;
@@ -81,19 +83,19 @@ public class Promotion {
         this.promotionType = promotionType;
     }
 
-    public int getOccurrences() {
+    public Integer getOccurrences() {
         return occurrences;
     }
 
-    public void setOccurrences(int occurrences) {
+    public void setOccurrences(Integer occurrences) {
         this.occurrences = occurrences;
     }
 
-    public int getMinimumValue() {
+    public BigDecimal getMinimumValue() {
         return minimumValue;
     }
 
-    public void setMinimumValue(int minimumValue) {
+    public void setMinimumValue(BigDecimal minimumValue) {
         this.minimumValue = minimumValue;
     }
 
@@ -121,11 +123,11 @@ public class Promotion {
         this.rewardType = rewardType;
     }
 
-    public float getRewardValue() {
+    public BigDecimal getRewardValue() {
         return rewardValue;
     }
 
-    public void setRewardValue(float rewardValue) {
+    public void setRewardValue(BigDecimal rewardValue) {
         this.rewardValue = rewardValue;
     }
 }

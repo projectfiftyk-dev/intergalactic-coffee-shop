@@ -48,10 +48,10 @@ CREATE TABLE promotions (
                             promotion_type VARCHAR(50) NOT NULL,
 
                             occurrences INT,
-                            minimum_value INT,
+                            minimum_value DECIMAL(19,4),
 
                             reward_type VARCHAR(50) NOT NULL,
-                            reward_value FLOAT
+                            reward_value DECIMAL(19,4)
 );
 
 
