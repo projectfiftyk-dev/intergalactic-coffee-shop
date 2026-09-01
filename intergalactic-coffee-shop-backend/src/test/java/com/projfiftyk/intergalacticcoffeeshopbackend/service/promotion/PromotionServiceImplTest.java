@@ -6,6 +6,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionS
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
+import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
@@ -33,12 +34,16 @@ class PromotionServiceImplTest {
     @Mock
     private PromotionMapper mapper;
 
+    @Mock
+    private ProductRepository productRepository;
+
     private PromotionServiceImpl service;
 
     @BeforeEach
     void setUp() {
         service = new PromotionServiceImpl(
                 promotionRepository,
+                productRepository,
                 mapper
         );
     }
