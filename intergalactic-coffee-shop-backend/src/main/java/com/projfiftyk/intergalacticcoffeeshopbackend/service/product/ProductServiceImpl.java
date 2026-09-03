@@ -49,11 +49,34 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(products);
     }
 
+    @Override
+    public List<ProductResponse> listActiveProducts(ProductListRequest request) {
+        List<Product> products =
+                productRepository.getProducts(
+                        request.pageSize() * (request.pageNumber() - 1),
+                        request.pageSize(),
+                        request.sortField(),
+                        request.direction(),
+                        List.of(ProductStatus.ACTIVE)
+                );
+
+        return mapper.map(products);
+    };
+
 
     @Override
     public ProductResponse getProduct(Long id) {
         Product product = productRepository.getProduct(id);
         if (product == null)
+            throw new ProductNotFoundException(id);
+        return mapper.map(product);
+    }
+
+    @Override
+    public ProductResponse getActiveProduct(Long id) {
+        Product product = productRepository.getProduct(id);
+        if (product == null ||
+            product.getProductStatus() != ProductStatus.ACTIVE)
             throw new ProductNotFoundException(id);
         return mapper.map(product);
     }
@@ -66,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException((id));
 
         product.setName(request.name());
+        product.setVersion(product.getVersion() + 1);
         Product updated = productRepository.updateProduct(id, product);
         return mapper.map(updated);
     }

@@ -221,6 +221,7 @@ public class OrderServiceImplTest {
 
         ProductResponse product = new ProductResponse(
                 1L,
+                1L,
                 "Espresso",
                 ProductStatus.ACTIVE
         );

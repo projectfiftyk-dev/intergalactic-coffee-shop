@@ -14,7 +14,11 @@ public interface ProductService  {
 
     List<ProductResponse> listProducts(ProductListRequest request);
 
+    List<ProductResponse> listActiveProducts(ProductListRequest request);
+
     ProductResponse getProduct(Long id);
+
+    ProductResponse getActiveProduct(Long id);
 
     ProductResponse updateStatus(Long id, ProductStatusUpdateRequest productStatus);
 

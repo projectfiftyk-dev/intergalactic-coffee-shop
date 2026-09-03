@@ -1,12 +1,12 @@
-package com.projfiftyk.intergalacticcoffeeshopbackend.web.product;
+package com.projfiftyk.intergalacticcoffeeshopbackend.web.product.external;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.service.product.ProductService;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
 import com.projfiftyk.intergalacticcoffeeshopbackend.service.security.SessionService;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductListRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
 import com.projfiftyk.intergalacticcoffeeshopbackend.web.security.SecurityContext;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,9 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
-        controllers = ProductController.class
+        controllers = ExternalProductController.class
 )
-class ProductControllerTest {
+class ExternalProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,7 +41,7 @@ class ProductControllerTest {
     private SessionService sessionService;
 
     @Test
-    void shouldListProducts() throws Exception {
+    void shouldListActiveProducts() throws Exception {
         // Arrange
         ProductListRequest request = new ProductListRequest(
                 1,
@@ -54,17 +53,13 @@ class ProductControllerTest {
         List<ProductResponse> products = List.of(
                 new ProductResponse(
                         1L,
+                        1L,
                         "Espresso",
                         ProductStatus.ACTIVE
-                ),
-                new ProductResponse(
-                        2L,
-                        "Cappuccino",
-                        ProductStatus.DEPRECATED
                 )
         );
 
-        when(productService.listProducts(request))
+        when(productService.listActiveProducts(request))
                 .thenReturn(products);
 
         // Act & Assert
@@ -76,51 +71,53 @@ class ProductControllerTest {
                                 .param("direction", "ASC")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].version").value(1))
                 .andExpect(jsonPath("$[0].name").value("Espresso"))
-                .andExpect(jsonPath("$[0].productStatus").value("ACTIVE"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].name").value("Cappuccino"))
-                .andExpect(jsonPath("$[1].productStatus").value("DEPRECATED"));
+                .andExpect(jsonPath("$[0].productStatus").value("ACTIVE"));
 
-        verify(productService).listProducts(request);
+        verify(productService).listActiveProducts(request);
     }
 
     @Test
-    void shouldGetProduct() throws Exception {
-
+    void shouldGetActiveProduct() throws Exception {
         // Arrange
         ProductResponse product = new ProductResponse(
+                1L,
                 1L,
                 "Espresso",
                 ProductStatus.ACTIVE
         );
 
-        when(productService.getProduct(any(Long.class)))
+        when(productService.getActiveProduct(1L))
                 .thenReturn(product);
 
         // Act & Assert
         mockMvc.perform(
-                get("/products/1")
-        )
+                        get("/products/1")
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(1))
+                .andExpect(jsonPath("version").value(1))
                 .andExpect(jsonPath("name").value("Espresso"))
                 .andExpect(jsonPath("productStatus").value("ACTIVE"));
 
-        verify(productService).getProduct(any(Long.class));
+        verify(productService).getActiveProduct(1L);
     }
 
     @Test
-    void shouldReturnNotFoundWhenProductDoesNotExist() throws Exception {
+    void shouldReturnNotFoundWhenActiveProductDoesNotExist() throws Exception {
         // Arrange
-        when(productService.getProduct(1L)).thenThrow(ProductNotFoundException.class);
+        when(productService.getActiveProduct(1L))
+                .thenThrow(ProductNotFoundException.class);
 
         // Act & Assert
         mockMvc.perform(
-                get("/products/1")
-        )
+                        get("/products/1")
+                )
                 .andExpect(status().isNotFound());
+
+        verify(productService).getActiveProduct(1L);
     }
 }

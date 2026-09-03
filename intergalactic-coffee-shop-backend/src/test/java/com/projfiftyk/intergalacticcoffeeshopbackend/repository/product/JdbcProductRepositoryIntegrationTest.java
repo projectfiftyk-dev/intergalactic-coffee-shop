@@ -47,6 +47,8 @@ public class JdbcProductRepositoryIntegrationTest {
         Product product = new Product();
         product.setName("Latte");
         product.setProductStatus(ProductStatus.ACTIVE);
+        product.setVersion(2L);
+
         // Act
         Product updatedProduct = repository.updateProduct(2L, product);
 
@@ -54,6 +56,7 @@ public class JdbcProductRepositoryIntegrationTest {
         assertEquals("Latte", updatedProduct.getName());
         assertEquals(ProductStatus.ACTIVE, updatedProduct.getProductStatus());
         assertEquals(2L, updatedProduct.getId());
+        assertEquals(2L, updatedProduct.getVersion());
     }
 
     @Test
@@ -132,4 +135,20 @@ public class JdbcProductRepositoryIntegrationTest {
         assertEquals("Espresso", products.get(0).getName());
     }
 
+    @Test
+    void shouldGetOnlyActiveProducts() {
+        // Act
+        List<Product> products = repository.getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC,
+                List.of(ProductStatus.ACTIVE)
+        );
+
+        // Assert
+        assertEquals(1, products.size());
+        assertEquals("Espresso", products.get(0).getName());
+        assertEquals(ProductStatus.ACTIVE, products.get(0).getProductStatus());
+    }
 }

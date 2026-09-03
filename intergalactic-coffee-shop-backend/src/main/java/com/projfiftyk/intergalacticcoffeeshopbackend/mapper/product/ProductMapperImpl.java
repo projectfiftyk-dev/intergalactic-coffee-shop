@@ -14,14 +14,12 @@ public class ProductMapperImpl implements ProductMapper {
     public List<ProductResponse> map(List<Product> products) {
         return products
                 .stream()
-                .map(product -> {
-                        return new ProductResponse(
-                                product.getId(),
-                                product.getName(),
-                                product.getProductStatus()
-                        );
-                    }
-                )
+                .map(product -> new ProductResponse(
+                        product.getId(),
+                        product.getVersion(),
+                        product.getName(),
+                        product.getProductStatus()
+                ))
                 .toList();
     }
 
@@ -29,6 +27,7 @@ public class ProductMapperImpl implements ProductMapper {
     public ProductResponse map(Product product) {
         return new ProductResponse(
                 product.getId(),
+                product.getVersion(),
                 product.getName(),
                 product.getProductStatus()
         );

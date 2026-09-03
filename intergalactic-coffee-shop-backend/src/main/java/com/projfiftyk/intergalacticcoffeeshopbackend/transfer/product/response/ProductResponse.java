@@ -4,6 +4,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatu
 
 public record ProductResponse(
         Long id,
+        Long version,
         String name,
         ProductStatus productStatus
 ) {

@@ -47,11 +47,13 @@ public class ProductServiceImplTest {
         List<ProductResponse> mappedProducts = List.of(
                 new ProductResponse(
                         1L,
+                        1L,
                         "Espresso",
                         ProductStatus.ACTIVE
                 ),
                 new ProductResponse(
                         2L,
+                        1L,
                         "Cappuccino",
                         ProductStatus.DEPRECATED
                 )
@@ -74,9 +76,11 @@ public class ProductServiceImplTest {
         product.setId(1L);
         product.setName("Espresso");
         product.setProductStatus(ProductStatus.ACTIVE);
+        product.setVersion(3L);
 
         ProductResponse mappedProduct = new ProductResponse(
                 1L,
+                3L,
                 "Espresso",
                 ProductStatus.ACTIVE
         );
@@ -89,6 +93,9 @@ public class ProductServiceImplTest {
 
         // Assert
         assertEquals(mappedProduct, result);
+
+        verify(repository).getProduct(1L);
+        verify(mapper).map(product);
     }
 
     @Test
@@ -98,16 +105,19 @@ public class ProductServiceImplTest {
         existingProduct.setId(1L);
         existingProduct.setName("Espresso");
         existingProduct.setProductStatus(ProductStatus.ACTIVE);
+        existingProduct.setVersion(1L);
 
         Product updatedProduct = new Product();
         updatedProduct.setId(1L);
         updatedProduct.setName("Latte");
         updatedProduct.setProductStatus(ProductStatus.ACTIVE);
+        updatedProduct.setVersion(2L);
 
         ProductUpdateRequest request = new ProductUpdateRequest("Latte");
 
         ProductResponse mappedProduct = new ProductResponse(
                 1L,
+                2L,
                 "Latte",
                 ProductStatus.ACTIVE
         );
@@ -123,6 +133,59 @@ public class ProductServiceImplTest {
         // Assert
         assertEquals(mappedProduct, result);
         assertEquals("Latte", existingProduct.getName());
+        assertEquals(2L, existingProduct.getVersion());
+
+        verify(repository).getProduct(1L);
+        verify(repository).updateProduct(1L, existingProduct);
+        verify(mapper).map(updatedProduct);
+    }
+
+    @Test
+    void shouldListOnlyActiveProducts() {
+        // Arrange
+        ProductListRequest request = new ProductListRequest(
+                1,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        List<Product> products = List.of(
+                new Product()
+        );
+
+        List<ProductResponse> mappedProducts = List.of(
+                new ProductResponse(
+                        1L,
+                        1L,
+                        "Espresso",
+                        ProductStatus.ACTIVE
+                )
+        );
+
+        when(repository.getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC,
+                List.of(ProductStatus.ACTIVE)
+        )).thenReturn(products);
+
+        when(mapper.map(products)).thenReturn(mappedProducts);
+
+        // Act
+        List<ProductResponse> result = service.listActiveProducts(request);
+
+        // Assert
+        assertEquals(mappedProducts, result);
+
+        verify(repository).getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC,
+                List.of(ProductStatus.ACTIVE)
+        );
     }
 
     @Test
@@ -132,17 +195,20 @@ public class ProductServiceImplTest {
         existingProduct.setId(1L);
         existingProduct.setName("Espresso");
         existingProduct.setProductStatus(ProductStatus.ACTIVE);
+        existingProduct.setVersion(3L);
 
         Product updatedProduct = new Product();
         updatedProduct.setId(1L);
         updatedProduct.setName("Espresso");
         updatedProduct.setProductStatus(ProductStatus.DEPRECATED);
+        updatedProduct.setVersion(3L);
 
         ProductStatusUpdateRequest request =
                 new ProductStatusUpdateRequest(ProductStatus.DEPRECATED);
 
         ProductResponse mappedResponse = new ProductResponse(
                 1L,
+                3L,
                 "Espresso",
                 ProductStatus.DEPRECATED
         );
@@ -161,6 +227,7 @@ public class ProductServiceImplTest {
                 ProductStatus.DEPRECATED,
                 existingProduct.getProductStatus()
         );
+        assertEquals(3L, existingProduct.getVersion());
     }
 
     @Test
@@ -200,6 +267,7 @@ public class ProductServiceImplTest {
 
         ProductResponse mappedResponse = new ProductResponse(
                 5L,
+                1L,
                 "Machiato",
                 ProductStatus.DRAFT
         );
@@ -277,11 +345,13 @@ public class ProductServiceImplTest {
         List<ProductResponse> mappedProducts = List.of(
                 new ProductResponse(
                         1L,
+                        1L,
                         "Cappuccino",
                         ProductStatus.ACTIVE
                 ),
                 new ProductResponse(
                         2L,
+                        1L,
                         "Espresso",
                         ProductStatus.ACTIVE
                 )
@@ -325,6 +395,7 @@ public class ProductServiceImplTest {
         List<ProductResponse> mappedProducts = List.of(
                 new ProductResponse(
                         2L,
+                        1L,
                         "Espresso",
                         ProductStatus.ACTIVE
                 )
@@ -351,5 +422,36 @@ public class ProductServiceImplTest {
                 ProductSortField.NAME,
                 SortDirection.ASC
         );
+    }
+
+    @Test
+    void shouldGetOnlyActiveProduct() {
+        // Arrange
+        Long productId = 1L;
+
+        Product product = new Product();
+        product.setId(productId);
+        product.setName("Espresso");
+        product.setProductStatus(ProductStatus.ACTIVE);
+        product.setVersion(4L);
+
+        ProductResponse mappedProduct = new ProductResponse(
+                productId,
+                4L,
+                "Espresso",
+                ProductStatus.ACTIVE
+        );
+
+        when(repository.getProduct(productId)).thenReturn(product);
+        when(mapper.map(product)).thenReturn(mappedProduct);
+
+        // Act
+        ProductResponse result = service.getActiveProduct(productId);
+
+        // Assert
+        assertEquals(mappedProduct, result);
+
+        verify(repository).getProduct(productId);
+        verify(mapper).map(product);
     }
 }

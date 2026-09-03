@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,6 +27,7 @@ public class JdbcProductRepository implements ProductRepository{
         product.setProductStatus(
                 ProductStatus.valueOf(rs.getString("product_status"))
         );
+        product.setVersion(rs.getLong("product_version"));
 
         return product;
     };
@@ -39,9 +42,9 @@ public class JdbcProductRepository implements ProductRepository{
     @Override
     public List<Product> getProducts() {
         String sql = """
-                SELECT id, name, product_status
-                FROM products
-                """;
+            SELECT id, name, product_status, product_version
+            FROM products
+            """;
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
@@ -54,12 +57,12 @@ public class JdbcProductRepository implements ProductRepository{
             SortDirection sortDirection) {
 
         String sql = """
-            SELECT id, name, product_status
-            FROM products
-            ORDER BY
-            """ + sortField.getColumn() + " " + sortDirection.name() + " " + """
-            LIMIT ? OFFSET ?
-            """;
+        SELECT id, name, product_status, product_version
+        FROM products
+        ORDER BY
+        """ + sortField.getColumn() + " " + sortDirection.name() + " " + """
+        LIMIT ? OFFSET ?
+        """;
 
         return jdbcTemplate.query(
                 sql,
@@ -70,12 +73,53 @@ public class JdbcProductRepository implements ProductRepository{
     }
 
     @Override
+    public List<Product> getProducts(
+            int offset,
+            int limit,
+            ProductSortField sortField,
+            SortDirection sortDirection,
+            List<ProductStatus> productStatuses
+    ) {
+        String statusPlaceholders = String.join(
+                ", ",
+                Collections.nCopies(productStatuses.size(), "?")
+        );
+
+        String sql = """
+            SELECT id, name, product_status, product_version
+            FROM products
+            WHERE product_status IN (%s)
+            ORDER BY %s %s
+            LIMIT ? OFFSET ?
+            """.formatted(
+                statusPlaceholders,
+                sortField.getColumn(),
+                sortDirection.name()
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        for (ProductStatus status : productStatuses) {
+            params.add(status.name());
+        }
+
+        params.add(limit);
+        params.add(offset);
+
+        return jdbcTemplate.query(
+                sql,
+                productRowMapper,
+                params.toArray(new Object[0])
+        );
+    }
+
+    @Override
     public Product getProduct(Long id) {
         String sql = """
-                SELECT id, name, product_status
-                FROM products
-                WHERE id = ?
-                """;
+            SELECT id, name, product_status, product_version
+            FROM products
+            WHERE id = ?
+            """;
 
         List<Product> products = jdbcTemplate.query(
                 sql, productRowMapper, id
@@ -88,26 +132,26 @@ public class JdbcProductRepository implements ProductRepository{
     }
 
     @Override
-    public Product updateProduct(Long id, Product product)
-    {
+    public Product updateProduct(Long id, Product product) {
         String sql = """
-                UPDATE products
-                SET name = ?, product_status = ?
-                WHERE id = ?
-                """;
+            UPDATE products
+            SET name = ?, product_status = ?, product_version = ?
+            WHERE id = ?
+            """;
 
         int rowsUpdated = jdbcTemplate.update(
                 sql,
-                product.getName(), product.getProductStatus().name(),
+                product.getName(),
+                product.getProductStatus().name(),
+                product.getVersion(),
                 id
         );
 
-        if (rowsUpdated == 0)
-        {
+        if (rowsUpdated == 0) {
             return null;
         }
 
-        return  getProduct(id);
+        return getProduct(id);
     }
 
     @Override
