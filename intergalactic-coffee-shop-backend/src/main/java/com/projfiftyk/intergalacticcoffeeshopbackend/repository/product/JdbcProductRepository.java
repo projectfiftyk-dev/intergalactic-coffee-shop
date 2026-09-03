@@ -1,6 +1,8 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.repository.product;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Locale;
 
 @Repository
 public class JdbcProductRepository implements ProductRepository{
@@ -41,6 +44,29 @@ public class JdbcProductRepository implements ProductRepository{
                 """;
 
         return jdbcTemplate.query(sql, productRowMapper);
+    }
+
+    @Override
+    public List<Product> getProducts(
+            int offset,
+            int limit,
+            ProductSortField sortField,
+            SortDirection sortDirection) {
+
+        String sql = """
+            SELECT id, name, product_status
+            FROM products
+            ORDER BY
+            """ + sortField.getColumn() + " " + sortDirection.name() + " " + """
+            LIMIT ? OFFSET ?
+            """;
+
+        return jdbcTemplate.query(
+                sql,
+                productRowMapper,
+                limit,
+                offset
+        );
     }
 
     @Override

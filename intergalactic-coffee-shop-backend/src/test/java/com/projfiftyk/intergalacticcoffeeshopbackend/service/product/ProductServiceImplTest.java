@@ -1,11 +1,14 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.service.product;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductListRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
@@ -17,8 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ProductServiceImplTest {
 
@@ -254,6 +256,100 @@ public class ProductServiceImplTest {
         assertEquals(
                 "Product with id 5 was not found",
                 exception.getMessage()
+        );
+    }
+
+    @Test
+    void shouldListProductsWithPagination() {
+        // Arrange
+        ProductListRequest request = new ProductListRequest(
+                1,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        List<Product> products = List.of(
+                new Product(),
+                new Product()
+        );
+
+        List<ProductResponse> mappedProducts = List.of(
+                new ProductResponse(
+                        1L,
+                        "Cappuccino",
+                        ProductStatus.ACTIVE
+                ),
+                new ProductResponse(
+                        2L,
+                        "Espresso",
+                        ProductStatus.ACTIVE
+                )
+        );
+
+        when(repository.getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        )).thenReturn(products);
+
+        when(mapper.map(products)).thenReturn(mappedProducts);
+
+        // Act
+        List<ProductResponse> result = service.listProducts(request);
+
+        // Assert
+        assertEquals(mappedProducts, result);
+
+        verify(repository).getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+    }
+
+    @Test
+    void shouldCalculateOffsetForSecondPage() {
+        // Arrange
+        ProductListRequest request = new ProductListRequest(
+                2,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        List<Product> products = List.of(new Product());
+
+        List<ProductResponse> mappedProducts = List.of(
+                new ProductResponse(
+                        2L,
+                        "Espresso",
+                        ProductStatus.ACTIVE
+                )
+        );
+
+        when(repository.getProducts(
+                10,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        )).thenReturn(products);
+
+        when(mapper.map(products)).thenReturn(mappedProducts);
+
+        // Act
+        List<ProductResponse> result = service.listProducts(request);
+
+        // Assert
+        assertEquals(mappedProducts, result);
+
+        verify(repository).getProducts(
+                10,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
         );
     }
 }

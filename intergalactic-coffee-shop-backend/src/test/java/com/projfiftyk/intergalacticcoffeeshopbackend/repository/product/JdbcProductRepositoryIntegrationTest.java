@@ -1,6 +1,8 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.repository.product;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.Product;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatus;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -67,4 +69,67 @@ public class JdbcProductRepositoryIntegrationTest {
         // Assert
         assertNotNull(createdProduct.getId());
     }
+
+    @Test
+    void shouldGetProductsSortedByNameAscending() {
+        // Act
+        List<Product> products = repository.getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        // Assert
+        assertEquals(2, products.size());
+        assertEquals("Cappuccino", products.get(0).getName());
+        assertEquals("Espresso", products.get(1).getName());
+    }
+
+    @Test
+    void shouldGetProductsSortedByNameDescending() {
+        // Act
+        List<Product> products = repository.getProducts(
+                0,
+                10,
+                ProductSortField.NAME,
+                SortDirection.DESC
+        );
+
+        // Assert
+        assertEquals(2, products.size());
+        assertEquals("Espresso", products.get(0).getName());
+        assertEquals("Cappuccino", products.get(1).getName());
+    }
+
+    @Test
+    void shouldGetProductsWithPagination() {
+        // Act
+        List<Product> products = repository.getProducts(
+                0,
+                1,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        // Assert
+        assertEquals(1, products.size());
+        assertEquals("Cappuccino", products.get(0).getName());
+    }
+
+    @Test
+    void shouldGetProductsWithOffset() {
+        // Act
+        List<Product> products = repository.getProducts(
+                1,
+                1,
+                ProductSortField.NAME,
+                SortDirection.ASC
+        );
+
+        // Assert
+        assertEquals(1, products.size());
+        assertEquals("Espresso", products.get(0).getName());
+    }
+
 }

@@ -5,6 +5,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductStatu
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.ProductNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductListRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
@@ -33,6 +34,21 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.getProducts();
         return mapper.map(products);
     }
+
+    @Override
+    public List<ProductResponse> listProducts(ProductListRequest request) {
+
+        List<Product> products =
+                productRepository.getProducts(
+                        request.pageSize() * (request.pageNumber() - 1),
+                        request.pageSize(),
+                        request.sortField(),
+                        request.direction()
+                );
+
+        return mapper.map(products);
+    }
+
 
     @Override
     public ProductResponse getProduct(Long id) {

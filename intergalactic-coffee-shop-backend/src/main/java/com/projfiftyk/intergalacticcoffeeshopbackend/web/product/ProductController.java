@@ -1,8 +1,10 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.web.product;
 
-import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.product.ProductMapper;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.product.ProductSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.service.product.ProductService;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductCreateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductListRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductStatusUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.request.ProductUpdateRequest;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.product.response.ProductResponse;
@@ -23,8 +25,20 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductResponse> getProducts() {
-        return productService.listProducts();
+    public List<ProductResponse> getProducts(
+            @RequestParam(defaultValue = "1") int pageNumber,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "NAME") ProductSortField sortField,
+            @RequestParam(defaultValue = "ASC") SortDirection direction
+    ) {
+        ProductListRequest request = new ProductListRequest(
+                pageNumber,
+                pageSize,
+                sortField,
+                direction
+        );
+
+        return productService.listProducts(request);
     }
 
     @GetMapping("/{id}")
