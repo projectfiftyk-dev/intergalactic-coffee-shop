@@ -8,10 +8,7 @@ import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundExce
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
-import com.projfiftyk.intergalacticcoffeeshopbackend.service.product.ProductService;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.*;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +35,22 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public List<PromotionResponse> listPromotions() {
         List<Promotion> promotions = promotionRepository.getPromotions();
+        return mapper.map(promotions);
+    }
+
+    @Override
+    public List<PromotionResponse> listPromotions(PromotionListRequest request, PromotionListFilterRequest filter) {
+        List<Promotion> promotions = promotionRepository.getPromotions(
+                (request.pageNumber() - 1) * request.pageSize(),
+                request.pageSize(),
+                request.sortField(),
+                request.direction(),
+                filter.createdAtFrom(),
+                filter.createdAtTo(),
+                filter.startDateFrom(),
+                filter.startDateTo(),
+                filter.statuses()
+        );
         return mapper.map(promotions);
     }
 

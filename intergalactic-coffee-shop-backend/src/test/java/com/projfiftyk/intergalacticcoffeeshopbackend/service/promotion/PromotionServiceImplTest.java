@@ -1,16 +1,12 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.service.promotion;
 
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionRewardType;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionStatus;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.*;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.PromotionNotFoundException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.mapper.promotion.PromotionMapper;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.product.ProductRepository;
 import com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion.PromotionRepository;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionCreateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionLifecycleUpdateRequest;
-import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.PromotionUpdateRequest;
+import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.request.*;
 import com.projfiftyk.intergalacticcoffeeshopbackend.transfer.promotion.response.PromotionResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -474,5 +470,82 @@ class PromotionServiceImplTest {
                 PromotionRewardType.FIXED,
                 BigDecimal.valueOf(5)
         );
+    }
+
+    @Test
+    void shouldListPromotionsWithPaginationAndFilters() {
+        // Arrange
+        Promotion first = createPromotion(1L);
+        Promotion second = createPromotion(2L);
+
+        List<Promotion> promotions =
+                List.of(first, second);
+
+        PromotionResponse firstResponse =
+                createResponse(1L);
+
+        PromotionResponse secondResponse =
+                createResponse(2L);
+
+        List<PromotionResponse> responses =
+                List.of(firstResponse, secondResponse);
+
+        PromotionListRequest request =
+                new PromotionListRequest(
+                        2,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.DESC
+                );
+
+        PromotionListFilterRequest filter =
+                new PromotionListFilterRequest(
+                        LocalDateTime.of(2026, 8, 1, 0, 0),
+                        LocalDateTime.of(2026, 8, 31, 23, 59),
+                        LocalDateTime.of(2026, 9, 1, 0, 0),
+                        LocalDateTime.of(2026, 9, 30, 23, 59),
+                        List.of(
+                                PromotionStatus.ACTIVE,
+                                PromotionStatus.DRAFT
+                        )
+                );
+
+        when(promotionRepository.getPromotions(
+                10,
+                10,
+                PromotionSortField.CREATED_AT,
+                SortDirection.DESC,
+                filter.createdAtFrom(),
+                filter.createdAtTo(),
+                filter.startDateFrom(),
+                filter.startDateTo(),
+                filter.statuses()
+        )).thenReturn(promotions);
+
+        when(mapper.map(promotions))
+                .thenReturn(responses);
+
+        // Act
+        List<PromotionResponse> result =
+                service.listPromotions(request, filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(responses, result);
+
+        verify(promotionRepository).getPromotions(
+                10,
+                10,
+                PromotionSortField.CREATED_AT,
+                SortDirection.DESC,
+                filter.createdAtFrom(),
+                filter.createdAtTo(),
+                filter.startDateFrom(),
+                filter.startDateTo(),
+                filter.statuses()
+        );
+
+        verify(mapper)
+                .map(promotions);
     }
 }

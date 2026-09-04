@@ -89,3 +89,77 @@ VALUES (
            2,
            'Cappuccino'
        );
+
+
+-- =========================================================
+-- PROMOTIONS
+-- =========================================================
+
+INSERT INTO promotions (
+    created_at,
+    start_date,
+    end_date,
+    status,
+    promotion_type,
+    occurrences,
+    minimum_value,
+    reward_type,
+    reward_value
+)
+VALUES (
+           '2026-08-30 10:00:00',
+           '2026-09-01 00:00:00',
+           '2026-09-30 23:59:00',
+           'DRAFT',
+           'NTH_PURCHASE',
+           5,
+           0,
+           'FIXED',
+           5
+       );
+
+INSERT INTO promotions (
+    created_at,
+    start_date,
+    end_date,
+    status,
+    promotion_type,
+    occurrences,
+    minimum_value,
+    reward_type,
+    reward_value
+)
+VALUES (
+           '2026-08-30 11:00:00',
+           '2026-09-01 00:00:00',
+           '2026-09-30 23:59:00',
+           'ACTIVE',
+           'NTH_PURCHASE',
+           3,
+           0,
+           'FIXED',
+           10
+       );
+
+INSERT INTO promotions (
+    created_at,
+    start_date,
+    end_date,
+    status,
+    promotion_type,
+    occurrences,
+    minimum_value,
+    reward_type,
+    reward_value
+)
+VALUES (
+           '2026-08-30 12:00:00',
+           '2026-09-05 00:00:00',
+           '2026-10-05 23:59:00',
+           'DEPRECATED',
+           'NTH_PURCHASE',
+           10,
+           0,
+           'FIXED',
+           15
+       );

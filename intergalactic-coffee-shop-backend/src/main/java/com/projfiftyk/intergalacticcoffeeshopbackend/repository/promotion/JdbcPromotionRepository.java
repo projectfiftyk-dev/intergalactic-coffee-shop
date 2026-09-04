@@ -1,10 +1,9 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion;
 
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionRewardType;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionStatus;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -14,12 +13,28 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
 public class JdbcPromotionRepository implements PromotionRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Promotion> promotionRowMapper = (rs, rowNum) -> {
+        Promotion promotion = mapPromotion(rs);
+
+        promotion.setProductIds(
+                getTargetProductIds(promotion.getId())
+        );
+
+        promotion.setRequiredProducts(
+                getRequiredProductIds(promotion.getId())
+        );
+
+        return promotion;
+    };
 
     public JdbcPromotionRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -42,19 +57,88 @@ public class JdbcPromotionRepository implements PromotionRepository {
                 ORDER BY id
                 """;
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Promotion promotion = mapPromotion(rs);
+        return jdbcTemplate.query(sql, promotionRowMapper);
+    }
 
-            promotion.setProductIds(
-                    getTargetProductIds(promotion.getId())
+    @Override
+    public List<Promotion> getPromotions(
+            int offset,
+            int limit,
+            PromotionSortField sortField,
+            SortDirection sortDirection,
+            LocalDateTime createdAtFrom,
+            LocalDateTime createdAtTo,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo,
+            List<PromotionStatus> statuses
+    ) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT id,
+                   created_at,
+                   start_date,
+                   end_date,
+                   status,
+                   promotion_type,
+                   occurrences,
+                   minimum_value,
+                   reward_type,
+                   reward_value
+            FROM promotions
+            WHERE 1 = 1
+            """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (createdAtFrom != null) {
+            sql.append(" AND created_at >= ?");
+            params.add(createdAtFrom);
+        }
+
+        if (createdAtTo != null) {
+            sql.append(" AND created_at <= ?");
+            params.add(createdAtTo);
+        }
+
+        if (startedAtFrom != null) {
+            sql.append(" AND start_date >= ?");
+            params.add(startedAtFrom);
+        }
+
+        if (startedAtTo != null) {
+            sql.append(" AND start_date <= ?");
+            params.add(startedAtTo);
+        }
+
+        if (statuses != null && !statuses.isEmpty()) {
+            String placeholders = String.join(
+                    ", ",
+                    Collections.nCopies(statuses.size(), "?")
             );
 
-            promotion.setRequiredProducts(
-                    getRequiredProductIds(promotion.getId())
-            );
+            sql.append(" AND status IN (")
+                    .append(placeholders)
+                    .append(")");
 
-            return promotion;
-        });
+            for (PromotionStatus status : statuses) {
+                params.add(status.name());
+            }
+        }
+
+        sql.append(" ORDER BY ")
+                .append(sortField.getColumn())
+                .append(" ")
+                .append(sortDirection.name());
+
+        sql.append(" LIMIT ? OFFSET ?");
+
+        params.add(limit);
+        params.add(offset);
+
+        return jdbcTemplate.query(
+                sql.toString(),
+                promotionRowMapper,
+                params.toArray()
+        );
     }
 
     @Override

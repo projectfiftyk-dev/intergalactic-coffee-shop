@@ -1,5 +1,6 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.error;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.security.AuthenticationException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.security.ForbiddenException;
 import com.projfiftyk.intergalacticcoffeeshopbackend.error.security.UnauthorizedException;
@@ -17,6 +18,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OrderNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void handleOrderNotFound() {}
+
+    @ExceptionHandler(PromotionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public void handlePromotionNotFound() {}
 
     @ExceptionHandler(OrderInvalidTransitionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

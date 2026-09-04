@@ -1,15 +1,14 @@
 package com.projfiftyk.intergalacticcoffeeshopbackend.repository.promotion;
 
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.SortDirection;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.Promotion;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionRewardType;
+import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionSortField;
 import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionStatus;
-import com.projfiftyk.intergalacticcoffeeshopbackend.domain.promotion.PromotionType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,123 +22,66 @@ public class JdbcPromotionRepositoryIntegrationTest {
     private JdbcPromotionRepository repository;
 
     @Test
-    void shouldCreatePromotion() {
-        Promotion promotion = createPromotion();
-
-        Promotion created = repository.createPromotion(promotion);
-
-        assertNotNull(created);
-        assertNotNull(created.getId());
-
-        assertEquals(
-                promotion.getCreatedAt(),
-                created.getCreatedAt()
-        );
-
-        assertEquals(
-                promotion.getStartDate(),
-                created.getStartDate()
-        );
-
-        assertEquals(
-                promotion.getEndDate(),
-                created.getEndDate()
-        );
-
-        assertEquals(
-                promotion.getStatus(),
-                created.getStatus()
-        );
-
-        assertEquals(
-                promotion.getPromotionType(),
-                created.getPromotionType()
-        );
-
-        assertEquals(
-                promotion.getOccurrences(),
-                created.getOccurrences()
-        );
-
-        assertEquals(
-                0,
-                created.getMinimumValue().compareTo(created.getMinimumValue())
-        );
-
-        assertEquals(
-                1,
-                BigDecimal.valueOf(20).compareTo(created.getRewardValue())
-        );
-
-        assertEquals(
-                0,
-                BigDecimal.valueOf(5).compareTo(created.getRewardValue())
-        );
-
-        assertEquals(
-                promotion.getProductIds(),
-                created.getProductIds()
-        );
-
-        assertEquals(
-                promotion.getRequiredProducts(),
-                created.getRequiredProducts()
-        );
-    }
-
-    @Test
     void shouldGetPromotionById() {
-        Promotion created =
-                repository.createPromotion(createPromotion());
+        List<Promotion> promotions = repository.getPromotions();
+
+        assertEquals(3, promotions.size());
+
+        Promotion expected = promotions.get(0);
 
         Promotion found =
-                repository.getPromotion(created.getId());
+                repository.getPromotion(expected.getId());
 
         assertNotNull(found);
 
         assertEquals(
-                created.getId(),
+                expected.getId(),
                 found.getId()
         );
 
         assertEquals(
-                created.getPromotionType(),
-                found.getPromotionType()
+                expected.getCreatedAt(),
+                found.getCreatedAt()
         );
 
         assertEquals(
-                created.getStatus(),
+                expected.getStartDate(),
+                found.getStartDate()
+        );
+
+        assertEquals(
+                expected.getEndDate(),
+                found.getEndDate()
+        );
+
+        assertEquals(
+                expected.getStatus(),
                 found.getStatus()
         );
 
         assertEquals(
-                created.getOccurrences(),
+                expected.getPromotionType(),
+                found.getPromotionType()
+        );
+
+        assertEquals(
+                expected.getOccurrences(),
                 found.getOccurrences()
         );
 
         assertEquals(
-                created.getMinimumValue(),
+                expected.getMinimumValue(),
                 found.getMinimumValue()
         );
 
         assertEquals(
-                created.getRewardType(),
+                expected.getRewardType(),
                 found.getRewardType()
         );
 
         assertEquals(
-                created.getRewardValue(),
+                expected.getRewardValue(),
                 found.getRewardValue()
-        );
-
-        assertEquals(
-                created.getProductIds(),
-                found.getProductIds()
-        );
-
-        assertEquals(
-                created.getRequiredProducts(),
-                found.getRequiredProducts()
         );
     }
 
@@ -153,217 +95,295 @@ public class JdbcPromotionRepositoryIntegrationTest {
 
     @Test
     void shouldGetAllPromotions() {
-        Promotion first =
-                repository.createPromotion(createPromotion());
-
-        Promotion second =
-                repository.createPromotion(createPromotion());
-
         List<Promotion> promotions =
                 repository.getPromotions();
+
+        assertEquals(3, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
+        );
+
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
+        );
+
+        assertEquals(
+                PromotionStatus.DEPRECATED,
+                promotions.get(2).getStatus()
+        );
+    }
+
+    @Test
+    void shouldGetPromotionsWithPagination() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        2,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                );
 
         assertEquals(2, promotions.size());
 
         assertEquals(
-                first.getId(),
-                promotions.get(0).getId()
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
         );
 
         assertEquals(
-                second.getId(),
-                promotions.get(1).getId()
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
         );
     }
 
     @Test
-    void shouldUpdatePromotion() {
-        Promotion created =
-                repository.createPromotion(createPromotion());
-
-        Promotion updated = createPromotion();
-
-        updated.setStartDate(
-                LocalDateTime.of(2026, 9, 1, 10, 0)
-        );
-
-        updated.setEndDate(
-                LocalDateTime.of(2026, 10, 1, 10, 0)
-        );
-
-        updated.setStatus(
-                PromotionStatus.DEPRECATED
-        );
-
-        updated.setPromotionType(
-                PromotionType.PRODUCT_DISCOUNT
-        );
-
-        updated.setRewardType(
-                PromotionRewardType.PERCENTAGE
-        );
-
-        updated.setRewardValue(
-                BigDecimal.valueOf(20)
-        );
-
-        Promotion result =
-                repository.updatePromotion(
-                        created.getId(),
-                        updated
+    void shouldGetPromotionsWithOffset() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        2,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
                 );
 
-        assertNotNull(result);
+        assertEquals(1, promotions.size());
 
         assertEquals(
-                created.getId(),
-                result.getId()
-        );
-
-        assertEquals(
-                updated.getStartDate(),
-                result.getStartDate()
-        );
-
-        assertEquals(
-                updated.getEndDate(),
-                result.getEndDate()
-        );
-
-        assertEquals(
-                updated.getStatus(),
-                result.getStatus()
-        );
-
-        assertEquals(
-                updated.getPromotionType(),
-                result.getPromotionType()
-        );
-
-        assertEquals(
-                0,
-                updated.getMinimumValue().compareTo(result.getMinimumValue())
-        );
-
-        assertEquals(
-                0,
-                BigDecimal.valueOf(20).compareTo(result.getRewardValue())
-        );
-
-        assertEquals(
-                updated.getRewardType(),
-                result.getRewardType()
-        );
-
-        assertEquals(
-                0,
-                updated.getMinimumValue().compareTo(result.getMinimumValue())
-        );
-
-        assertEquals(
-                0,
-                BigDecimal.valueOf(20).compareTo(result.getRewardValue())
-        );
-
-        assertEquals(
-                updated.getRequiredProducts(),
-                result.getRequiredProducts()
+                PromotionStatus.DEPRECATED,
+                promotions.get(0).getStatus()
         );
     }
 
     @Test
-    void shouldReturnNullWhenUpdatingNonExistingPromotion() {
-        Promotion promotion = createPromotion();
-
-        Promotion result =
-                repository.updatePromotion(
-                        999999L,
-                        promotion
+    void shouldGetPromotionsWithStatusFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(PromotionStatus.ACTIVE)
                 );
 
-        assertNull(result);
+        assertEquals(1, promotions.size());
+
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(0).getStatus()
+        );
     }
 
     @Test
-    void shouldUpdateTargetAndRequiredProducts() {
-        Promotion created =
-                repository.createPromotion(
-                        createPromotion()
+    void shouldGetPromotionsWithMultipleStatusFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(
+                                PromotionStatus.DRAFT,
+                                PromotionStatus.ACTIVE
+                        )
                 );
 
-        Promotion updated = createPromotion();
-
-        updated.setProductIds(
-                List.of(2L)
-        );
-
-        updated.setRequiredProducts(
-                List.of(1L)
-        );
-
-        Promotion result =
-                repository.updatePromotion(
-                        created.getId(),
-                        updated
-                );
-
-        assertNotNull(result);
+        assertEquals(2, promotions.size());
 
         assertEquals(
-                List.of(2L),
-                result.getProductIds()
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
         );
 
         assertEquals(
-                List.of(1L),
-                result.getRequiredProducts()
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
         );
     }
 
-    private Promotion createPromotion() {
-        Promotion promotion = new Promotion();
+    @Test
+    void shouldGetPromotionsWithCreatedAtFromFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        LocalDateTime.of(2026, 8, 30, 11, 0),
+                        null,
+                        null,
+                        null,
+                        null
+                );
 
-        promotion.setCreatedAt(
-                LocalDateTime.of(2026, 8, 30, 12, 0)
+        assertEquals(2, promotions.size());
+
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(0).getStatus()
         );
 
-        promotion.setStartDate(
-                LocalDateTime.of(2026, 9, 1, 0, 0)
+        assertEquals(
+                PromotionStatus.DEPRECATED,
+                promotions.get(1).getStatus()
+        );
+    }
+
+    @Test
+    void shouldGetPromotionsWithCreatedAtToFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        null,
+                        LocalDateTime.of(2026, 8, 30, 11, 0),
+                        null,
+                        null,
+                        null
+                );
+
+        assertEquals(2, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
         );
 
-        promotion.setEndDate(
-                LocalDateTime.of(2026, 9, 30, 23, 59)
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
+        );
+    }
+
+    @Test
+    void shouldGetPromotionsWithStartDateFromFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.START_DATE,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        LocalDateTime.of(2026, 9, 5, 0, 0),
+                        null,
+                        null
+                );
+
+        assertEquals(1, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DEPRECATED,
+                promotions.get(0).getStatus()
+        );
+    }
+
+    @Test
+    void shouldGetPromotionsWithStartDateToFilter() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.START_DATE,
+                        SortDirection.ASC,
+                        null,
+                        null,
+                        null,
+                        LocalDateTime.of(2026, 9, 1, 0, 0),
+                        null
+                );
+
+        assertEquals(2, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
         );
 
-        promotion.setStatus(
-                PromotionStatus.DRAFT
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
+        );
+    }
+
+    @Test
+    void shouldSortPromotionsDescendingByCreatedAt() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        10,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.DESC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+
+        assertEquals(3, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DEPRECATED,
+                promotions.get(0).getStatus()
         );
 
-        promotion.setPromotionType(
-                PromotionType.NTH_PURCHASE
+        assertEquals(
+                PromotionStatus.ACTIVE,
+                promotions.get(1).getStatus()
         );
 
-        promotion.setOccurrences(5);
-
-        promotion.setMinimumValue(
-                BigDecimal.ZERO
+        assertEquals(
+                PromotionStatus.DRAFT,
+                promotions.get(2).getStatus()
         );
+    }
 
-        promotion.setProductIds(
-                List.of(1L, 2L)
+    @Test
+    void shouldCombineFiltersAndPagination() {
+        List<Promotion> promotions =
+                repository.getPromotions(
+                        0,
+                        1,
+                        PromotionSortField.CREATED_AT,
+                        SortDirection.ASC,
+                        LocalDateTime.of(2026, 8, 30, 10, 0),
+                        null,
+                        null,
+                        null,
+                        List.of(
+                                PromotionStatus.DRAFT,
+                                PromotionStatus.ACTIVE
+                        )
+                );
+
+        assertEquals(1, promotions.size());
+
+        assertEquals(
+                PromotionStatus.DRAFT,
+                promotions.get(0).getStatus()
         );
-
-        promotion.setRequiredProducts(
-                List.of(1L)
-        );
-
-        promotion.setRewardType(
-                PromotionRewardType.FIXED
-        );
-
-        promotion.setRewardValue(
-                BigDecimal.valueOf(5)
-        );
-
-        return promotion;
     }
 }
